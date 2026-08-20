@@ -5,27 +5,22 @@ description: 在 DeepSeek Harness 中安装 DSH FreeCanvas
 
 # DSH 插件
 
-仓库的 `plugins/dsh-freecanvas/` 是可安装的 DSH bundle。安装后会在 DeepSeek Harness 侧边栏增加 DSH FreeCanvas 入口，并提供会话、分屏和全画布三种布局，同时托管内嵌画布使用的本地 Canvas Agent HTTP 服务。
-
-## 前置条件
-
-先在 `http://127.0.0.1:3000` 启动 DSH FreeCanvas：
-
-```bash
-git clone https://github.com/JustinQiuck/dsh-freecanvas.git
-cd dsh-freecanvas
-docker compose -f docker-compose.local.yml up -d --build
-```
+仓库的 `plugins/dsh-freecanvas/` 是可安装的 DSH bundle。正式发布包随包携带画布前端，安装后会在 DeepSeek Harness 侧边栏增加 DSH FreeCanvas 入口，并提供会话、分屏和全画布三种布局，同时托管本地 Canvas Agent HTTP 服务。
 
 ## 安装 bundle
 
+从插件市场或 npm 安装时不需要另外启动 Docker、Vite 或本地 3000 端口。从仓库源码目录安装时，先生成插件内置画布：
+
 ```bash
+npm --prefix web install --legacy-peer-deps
+npm --prefix plugins/dsh-freecanvas install --no-package-lock --legacy-peer-deps
+npm --prefix plugins/dsh-freecanvas run build:web
 dsh plugin --profile desktop add ./plugins/dsh-freecanvas
 ```
 
 插件已经声明 `dsh.bundle.patch`，DSH 会自动把它加入 profile bundle 列表，不要再手动插入第二条 `ui-dsh-freecanvas`。
 
-画布地址和 Agent 自动启动可以在 DSH 插件配置中修改。MCP 接入示例和完整配置见[插件 README](https://github.com/JustinQiuck/dsh-freecanvas/tree/main/plugins/dsh-freecanvas)。
+`canvasUrl` 默认留空并使用包内画布；只有本地开发或自定义部署时才填写外部画布地址。Agent 自动启动也可以在 DSH 插件配置中修改。MCP 接入示例和完整配置见[插件 README](https://github.com/JustinQiuck/dsh-freecanvas/tree/main/plugins/dsh-freecanvas)。
 
 ## 许可证
 

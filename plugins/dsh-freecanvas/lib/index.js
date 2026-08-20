@@ -6,34 +6,31 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "@deepseek-ai/schemastery";
 
 /**
  * dsh-plugin-freecanvas host half.
  *
- * Registers a settings namespace exposing the canvas URL the browser half
- * embeds, plus a model-facing guidance section. Also registers the
- * `/canvas-proxy` reverse-proxy route: DSH's Electron webview refuses every
- * cross-origin iframe navigation (verified empirically: same-origin iframes
- * navigate, cross-origin/data:/public all stay about:blank), so the browser
- * half must load the canvas through a SAME-ORIGIN path. The proxy forwards
- * to the local canvas service (127.0.0.1:3000) and rewrites Vite's
- * absolute asset paths (`/src/...`, `/@vite/...`, `/config.js`, ...) into the
- * `/canvas-proxy` prefix so the canvas app bootstraps under the DSH origin.
+ * Serves the bundled canvas on the DSH origin and registers the settings and
+ * model guidance used by the browser half. An explicit `canvasUrl` switches
+ * the same route into external-service proxy mode for development or custom
+ * deployments without changing the iframe origin.
  */
 
 export const CANVAS_WEB_SETTINGS_NAMESPACE = settingsNamespace("dsh-freecanvas");
 
-const DEFAULT_CANVAS_URL = "http://127.0.0.1:3000";
-const PROXY_PREFIX = "/canvas-proxy";
+const CANVAS_PATH = "/dsh-freecanvas";
+const PROXY_PREFIX = CANVAS_PATH;
 const AGENT_BOOTSTRAP_PATH = "/canvas-agent-bootstrap";
 const AGENT_CONFIG_FILE = path.join(os.homedir(), ".infinite-canvas", "canvas-agent.json");
+const BUNDLED_CANVAS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../web");
 const require = createRequire(import.meta.url);
 const AGENT_ENTRY = require.resolve("@basketikun/canvas-agent");
 
 export const Config = z.object({
-    canvasUrl: z.string().default(DEFAULT_CANVAS_URL),
+    canvasUrl: z.string().default(""),
     autoStartAgent: z.boolean().default(true),
 });
 
@@ -41,14 +38,14 @@ export const Config = z.object({
 const inject = ["systemPrompt", "webServer"];
 
 /** Model-facing announcement: plugin presence and capabilities. */
-const CANVAS_WEB_GUIDANCE = "本机已安装 dsh-plugin-freecanvas：侧边栏「DSH FreeCanvas」入口可在 DSH 内嵌画布；配合 Canvas Agent 与 dsh-mcp-client，可让 agent 读取画布、创建节点、连接流程并触发生成。";
+const CANVAS_WEB_GUIDANCE = "本机已安装 dsh-plugin-freecanvas：侧边栏「DSH FreeCanvas」入口可直接打开随插件安装的画布；配合 Canvas Agent 与 dsh-mcp-client，可让 agent 读取画布、创建节点、连接流程并触发生成。";
 
 /** Order of the announcement section within the tool-guidance band. */
 const SECTION_ORDER = 210;
 
 /**
- * vite 资源路径重写：`"/src/main.tsx"`、`/@vite/client`、`/config.js` 等
- * 绝对路径一律加 `/canvas-proxy` 前缀，使画布页面在同源代理下自举。
+ * External Vite services still emit root-relative development assets. Prefix
+ * those paths so proxy mode stays on the same DSH origin as the bundled mode.
  */
 // Only rewrite quote-delimited paths. Matching `(` would also match JavaScript
 // regex literals such as `replace(/@vite\/client$/, "")` and corrupt the script.
@@ -56,6 +53,112 @@ const REWRITE_RE = /(["'`])(\/(?:src|@vite|@react-refresh|node_modules|plugins|c
 
 function rewriteCanvasPaths(text) {
     return text.replace(REWRITE_RE, (whole, quote, path) => quote + PROXY_PREFIX + path);
+}
+
+const CONTENT_TYPES = {
+    ".css": "text/css; charset=utf-8",
+    ".gif": "image/gif",
+    ".html": "text/html; charset=utf-8",
+    ".ico": "image/x-icon",
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
+    ".js": "text/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".map": "application/json; charset=utf-8",
+    ".mjs": "text/javascript; charset=utf-8",
+    ".mp3": "audio/mpeg",
+    ".mp4": "video/mp4",
+    ".ogg": "audio/ogg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml; charset=utf-8",
+    ".txt": "text/plain; charset=utf-8",
+    ".wasm": "application/wasm",
+    ".webm": "video/webm",
+    ".webmanifest": "application/manifest+json; charset=utf-8",
+    ".webp": "image/webp",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+};
+
+function sendText(res, status, message, headers = {}) {
+    const body = Buffer.from(message, "utf8");
+    res.writeHead(status, {
+        "content-type": "text/plain; charset=utf-8",
+        "content-length": String(body.length),
+        ...headers,
+    });
+    res.end(body);
+}
+
+function serveBundledCanvas(req, res) {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+        sendText(res, 405, "Method Not Allowed", { allow: "GET, HEAD" });
+        return;
+    }
+    const indexPath = path.join(BUNDLED_CANVAS_DIR, "index.html");
+    if (!fs.existsSync(indexPath)) {
+        sendText(res, 503, "DSH FreeCanvas 内置资源缺失：请重新安装完整插件包，或在插件目录运行 npm run build:web 后重试");
+        return;
+    }
+    let requestUrl;
+    try {
+        requestUrl = new URL(req.url ?? "/", "http://x");
+    } catch {
+        sendText(res, 400, "Bad Request");
+        return;
+    }
+    if (requestUrl.pathname !== CANVAS_PATH && !requestUrl.pathname.startsWith(`${CANVAS_PATH}/`)) {
+        sendText(res, 404, "Not Found");
+        return;
+    }
+    let relativePath;
+    try {
+        relativePath = decodeURIComponent(requestUrl.pathname.slice(CANVAS_PATH.length)).replace(/^\/+/, "");
+    } catch {
+        sendText(res, 400, "Bad Request");
+        return;
+    }
+    const resolveFile = (relative) => {
+        const candidate = path.resolve(BUNDLED_CANVAS_DIR, relative);
+        if (candidate !== BUNDLED_CANVAS_DIR && !candidate.startsWith(`${BUNDLED_CANVAS_DIR}${path.sep}`)) return null;
+        return candidate;
+    };
+    let filePath = resolveFile(relativePath || "index.html");
+    if (!filePath) {
+        sendText(res, 403, "Forbidden");
+        return;
+    }
+    let stat;
+    try {
+        stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+            filePath = path.join(filePath, "index.html");
+            stat = fs.statSync(filePath);
+        }
+    } catch {
+        if (path.extname(relativePath)) {
+            sendText(res, 404, "Not Found");
+            return;
+        }
+        filePath = indexPath;
+        stat = fs.statSync(filePath);
+    }
+    if (!stat.isFile()) {
+        sendText(res, 404, "Not Found");
+        return;
+    }
+    const contentType = CONTENT_TYPES[path.extname(filePath).toLowerCase()] || "application/octet-stream";
+    const immutable = relativePath.startsWith("assets/");
+    res.writeHead(200, {
+        "content-type": contentType,
+        "content-length": String(stat.size),
+        "cache-control": immutable ? "public, max-age=31536000, immutable" : "no-cache",
+    });
+    if (req.method === "HEAD") {
+        res.end();
+        return;
+    }
+    fs.createReadStream(filePath).on("error", () => res.destroy()).pipe(res);
 }
 
 function readAgentConfig() {
@@ -91,9 +194,11 @@ function createAgentManager(autoStart) {
         if (await agentHealthy(current)) return current;
         if (!autoStart()) throw new Error("Canvas Agent 未运行，且自动启动已关闭");
         if (!child || child.exitCode !== null) {
+            const env = { ...process.env };
+            if (process.versions.electron) env.ELECTRON_RUN_AS_NODE = "1";
             child = spawn(process.execPath, [AGENT_ENTRY], {
                 cwd: os.homedir(),
-                env: process.env,
+                env,
                 stdio: "ignore",
             });
             child.once("error", () => { child = undefined; });
@@ -163,8 +268,8 @@ async function serveAgentBootstrap(req, res, manager) {
     }
 }
 
-/** Forward a `/canvas-proxy/*` request to the local canvas dev server. */
-async function proxyCanvas(req, res, canvasUrl = DEFAULT_CANVAS_URL) {
+/** Forward the canvas route to an explicitly configured external web service. */
+async function proxyCanvas(req, res, canvasUrl) {
     let url;
     try {
         url = new URL(req.url ?? "/", "http://x");
@@ -177,7 +282,7 @@ async function proxyCanvas(req, res, canvasUrl = DEFAULT_CANVAS_URL) {
     if (targetPath.startsWith(PROXY_PREFIX)) targetPath = targetPath.slice(PROXY_PREFIX.length) || "/";
     let upstream;
     try {
-        const base = new URL(canvasUrl || DEFAULT_CANVAS_URL);
+        const base = new URL(canvasUrl);
         if (!base.pathname.endsWith("/")) base.pathname += "/";
         upstream = new URL(`${targetPath.replace(/^\/+/, "")}${url.search}`, base).toString();
     } catch {
@@ -197,7 +302,7 @@ async function proxyCanvas(req, res, canvasUrl = DEFAULT_CANVAS_URL) {
         });
     } catch {
         res.writeHead(502, { "content-type": "text/plain; charset=utf-8" });
-        res.end("DSH FreeCanvas 未运行：请先启动项目服务（默认端口 3000）后重试");
+        res.end("外部 DSH FreeCanvas 服务不可用：请检查插件 canvasUrl 配置");
         return;
     }
     const ct = outRes.headers.get("content-type") ?? "";
@@ -214,6 +319,12 @@ async function proxyCanvas(req, res, canvasUrl = DEFAULT_CANVAS_URL) {
     headers["content-length"] = String(body.length);
     res.writeHead(outRes.status, headers);
     res.end(body);
+}
+
+function serveCanvas(req, res, canvasUrl) {
+    const externalUrl = String(canvasUrl || "").trim();
+    if (externalUrl) return proxyCanvas(req, res, externalUrl);
+    return serveBundledCanvas(req, res);
 }
 
 const apply = (ctx, config) => {
@@ -247,18 +358,18 @@ const apply = (ctx, config) => {
         path: AGENT_BOOTSTRAP_PATH,
         handler: (req, res) => serveAgentBootstrap(req, res, agentManager),
     }), "dsh-freecanvas: local agent bootstrap");
-    // Same-origin reverse proxy so the canvas web app can be embedded in the
-    // iframe (cross-origin iframe navigation is refused by this Electron build).
+    // Serve the packaged canvas on the DSH origin. An explicit canvasUrl keeps
+    // the same browser path but switches the handler to external proxy mode.
     ctx.effect(() => ctx.webServer.register({
         kind: "prefix",
         path: PROXY_PREFIX,
-        handler: (req, res) => proxyCanvas(req, res, current()?.canvasUrl),
-    }), "dsh-freecanvas: same-origin proxy");
+        handler: (req, res) => serveCanvas(req, res, current()?.canvasUrl),
+    }), "dsh-freecanvas: bundled canvas");
 };
 
 // Cordis reads `plugin.inject` when the plugin is registered; attach it at
 // module scope so it is present before `apply` is invoked.
 apply.inject = inject;
 
-export { apply, AGENT_BOOTSTRAP_PATH, CANVAS_WEB_GUIDANCE, PROXY_PREFIX };
+export { apply, AGENT_BOOTSTRAP_PATH, CANVAS_PATH, CANVAS_WEB_GUIDANCE, PROXY_PREFIX };
 export default apply;

@@ -77,7 +77,7 @@ docker compose -f docker-compose.local.yml up -d --build
 
 ## DSH 集成重点
 
-- DSH 原生入口：通过 `dsh-plugin-freecanvas` 在侧边栏打开画布，并支持会话、分屏和全画布布局。
+- 内置 DSH 画布：`dsh-plugin-freecanvas` 随包携带画布前端，在侧边栏直接打开，无需另行启动 Web 服务，并支持会话、分屏和全画布布局。
 - 托管本地 Agent：DSH 插件负责启动 Canvas Agent，网页自动读取连接信息，不要求用户手工复制 token。
 - 本地优先：画布、素材、生成记录与 API Key 默认保存在浏览器本地，数据边界清晰。
 - 独立维护：版本、更新日志、插件清单、容器镜像和问题反馈统一由本仓库维护。

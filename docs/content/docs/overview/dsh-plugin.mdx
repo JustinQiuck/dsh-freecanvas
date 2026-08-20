@@ -5,27 +5,22 @@ description: Install DSH FreeCanvas in DeepSeek Harness
 
 # DSH Plugin
 
-The DSH bundle in `plugins/dsh-freecanvas/` adds DSH FreeCanvas to the DeepSeek Harness sidebar with conversation, split, and full-canvas layouts. It also manages the local Canvas Agent HTTP service used by the embedded canvas.
-
-## Prerequisite
-
-Start DSH FreeCanvas at `http://127.0.0.1:3000`:
-
-```bash
-git clone https://github.com/JustinQiuck/dsh-freecanvas.git
-cd dsh-freecanvas
-docker compose -f docker-compose.local.yml up -d --build
-```
+The published DSH bundle in `plugins/dsh-freecanvas/` includes the built DSH FreeCanvas frontend. It adds the canvas to the DeepSeek Harness sidebar with conversation, split, and full-canvas layouts and manages the local Canvas Agent HTTP service.
 
 ## Install the bundle
 
+Marketplace and npm packages need no separate Docker, Vite, or port 3000 service. When installing from a source checkout, build the bundled frontend first:
+
 ```bash
+npm --prefix web install --legacy-peer-deps
+npm --prefix plugins/dsh-freecanvas install --no-package-lock --legacy-peer-deps
+npm --prefix plugins/dsh-freecanvas run build:web
 dsh plugin --profile desktop add ./plugins/dsh-freecanvas
 ```
 
 The package declares `dsh.bundle.patch`, so DSH automatically adds it to the profile bundle list. Do not manually insert another `ui-dsh-freecanvas` row.
 
-The default canvas URL and automatic Agent startup can be changed from the DSH plugin settings. See the [plugin README](https://github.com/JustinQiuck/dsh-freecanvas/tree/main/plugins/dsh-freecanvas) for the MCP bridge example and full configuration.
+By default, `canvasUrl` is empty and the package serves its bundled canvas. Set it only to proxy an external canvas during development or a custom deployment. Automatic Agent startup can also be changed from the DSH plugin settings. See the [plugin README](https://github.com/JustinQiuck/dsh-freecanvas/tree/main/plugins/dsh-freecanvas) for the MCP bridge example and full configuration.
 
 ## License
 
