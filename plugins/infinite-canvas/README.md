@@ -10,7 +10,7 @@ macOS / Linux：
 git clone https://github.com/JustinQiuck/dsh-freecanvas.git
 cd dsh-freecanvas
 codex plugin marketplace add "$(pwd)"
-codex plugin add infinite-canvas@infinite-canvas-local
+codex plugin add infinite-canvas@dsh-freecanvas-local
 ```
 
 Windows PowerShell：
@@ -19,7 +19,7 @@ Windows PowerShell：
 git clone https://github.com/JustinQiuck/dsh-freecanvas.git
 cd dsh-freecanvas
 codex plugin marketplace add "$PWD"
-codex plugin add infinite-canvas@infinite-canvas-local
+codex plugin add infinite-canvas@dsh-freecanvas-local
 ```
 
 Windows CMD 将 `$PWD` 替换为 `%cd%`。

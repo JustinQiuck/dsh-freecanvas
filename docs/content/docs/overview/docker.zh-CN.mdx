@@ -52,7 +52,7 @@ docker compose -f docker-compose.local.yml up -d --build
 ```yaml
 services:
   app:
-    image: infinite-canvas:local
+    image: dsh-freecanvas:local
     ports:
       - "3000:3000"
     environment:
@@ -66,7 +66,7 @@ services:
 docker run -d -p 3000:3000 \
   -e ANALYTICS_GA4_ID=G-XXXXXXXXXX \
   -e ANALYTICS_BAIDU_ID=e8263761cc5c32f5f7a855b8203b965a \
-  infinite-canvas:local
+  dsh-freecanvas:local
 ```
 
 单页应用的路由切换会自动向所有已启用的统计上报 pageview。

@@ -15,7 +15,7 @@
   <a href="docs/content/docs/overview/quick-start.mdx">快速开始</a> · <a href="docs/content/docs/overview/features.mdx">功能介绍</a> · <a href="docs/content/docs/overview/dsh-plugin.zh-CN.mdx">DSH 插件</a> · <a href="docs/content/docs/overview/render.mdx">Render 部署</a> · <a href="docs/content/docs/overview/docker.mdx">Docker 部署</a> · <a href="docs/content/docs/canvas/canvas-node-manual.mdx">画布节点操作手册</a> · <a href="docs/content/docs/canvas/canvas-shortcuts.mdx">画布快捷键</a> · <a href="SECURITY.md">漏洞提交</a> · <a href="docs/content/docs/progress/todo.mdx">待办事项</a> · <a href="canvas-agent/README.md">本地 Canvas Agent</a> · <a href="plugins/infinite-canvas">Codex app 插件</a>
 </p>
 
-DSH FreeCanvas 是将开源项目 [infinite-canvas](https://github.com/basketikun/infinite-canvas) 集成到 DSH 的 AI 无限画布工作台。它把画布编排、AI 图片生成、参考图编辑、视频生成、对话助手、提示词库和素材管理放在同一个界面里，为 DSH 提供可视化的 AI 创作与内容编排能力。
+DSH FreeCanvas 是面向 DSH 持续适配和维护的 AI 无限画布工作台。它把画布编排、AI 图片生成、参考图编辑、视频生成、对话助手、提示词库和素材管理放在同一个界面里，为 DSH 提供可视化的 AI 创作与内容编排能力。
 
 ## 项目信息
 
@@ -75,26 +75,12 @@ docker compose -f docker-compose.local.yml up -d --build
 
 如果默认的OpenAI接口调用方式与您的API不同，可自定义生图/视频脚本调用。
 
-## 效果展示
+## DSH 集成重点
 
-<table width="100%">
-  <tr>
-    <td width="50%"><img src="https://i.ibb.co/TDFvGWDT/image.png" alt="image" border="0"></td>
-    <td width="50%"><img src="https://i.ibb.co/zVwJq3YS/image.png" alt="image" border="0"></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="https://i.ibb.co/PvY3qhhK/image.png" alt="image" border="0"></td>
-    <td width="50%"><img src="https://i.ibb.co/7D04LwN/image.png" alt="image" border="0"></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="https://i.ibb.co/bj30FtS5/5.png" alt="5" border="0"></td>
-    <td width="50%"><img src="https://i.ibb.co/hxRvjw51/image.png" alt="image" border="0"></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="https://i.ibb.co/jkWsF8q1/image.png" alt="image" border="0"></td>
-    <td width="50%"><img src="https://i.ibb.co/XrnfXHx7/image.png" alt="image" border="0"></td>
-  </tr>
-</table>
+- DSH 原生入口：通过 `dsh-plugin-freecanvas` 在侧边栏打开画布，并支持会话、分屏和全画布布局。
+- 托管本地 Agent：DSH 插件负责启动 Canvas Agent，网页自动读取连接信息，不要求用户手工复制 token。
+- 本地优先：画布、素材、生成记录与 API Key 默认保存在浏览器本地，数据边界清晰。
+- 独立维护：版本、更新日志、插件清单、容器镜像和问题反馈统一由本仓库维护。
 
 ## 项目入口
 

@@ -40,9 +40,9 @@ Canvas Agent 默认只监听 `127.0.0.1`。网页第一次带正确 token 连接
 
 ## 发布
 
-`canvas-agent` 使用自己的 `package.json` 版本号，不跟仓库根目录 `VERSION` 绑定。推送到 `main` 后，GitHub Actions 会检查 npm 上是否已经存在当前包版本；不存在时才发布 `@basketikun/canvas-agent`。
+`canvas-agent` 使用自己的 `package.json` 版本号，不跟仓库根目录 `VERSION` 绑定。当前 Codex 与 DSH 安装链路仍使用上游发布的 `@basketikun/canvas-agent@0.6.0`；本仓库尚未发布自有 npm 包，不能只改命令里的包名。
 
-发布前需要在 GitHub 仓库 Secrets 中配置 `NPM_TOKEN`。
+后续发布自有包时，需要先确定可用的 npm scope、补齐发布工作流和 `NPM_TOKEN`，验证 DSH bundle 与 Codex MCP 安装后再统一切换依赖。
 
 ## Codex MCP
 
@@ -64,14 +64,14 @@ codex mcp remove infinite-canvas
 
 ### Codex app 插件
 
-仓库内提供了 Codex app 插件：`plugins/infinite-canvas`。在 Codex app 中添加本仓库的 marketplace 后，可以安装 `Infinite Canvas` 插件；插件会注册同一个 `infinite-canvas` MCP，并带上画布操作说明。
+仓库内提供了 Codex app 插件：`plugins/infinite-canvas`。在 Codex app 中添加本仓库的 marketplace 后，可以安装 `DSH FreeCanvas` 插件；插件会注册同一个 `infinite-canvas` MCP，并带上画布操作说明。
 
 添加本地 marketplace 时建议使用仓库绝对路径，避免 Codex 从其他工作目录解析失败：
 
 ```bash
-cd /path/to/infinite-canvas
+cd /path/to/dsh-freecanvas
 codex plugin marketplace add "$(pwd)"
-codex plugin add infinite-canvas@infinite-canvas-local
+codex plugin add infinite-canvas@dsh-freecanvas-local
 ```
 
 插件默认通过 npm 启动 MCP；这个命令只提供 MCP 工具，不会把 MCP 写入全局配置，也不会在退出时自动卸载：
@@ -91,7 +91,7 @@ codex mcp add infinite-canvas -- npx -y @basketikun/canvas-agent mcp
 本仓库开发时可以改成，实际使用建议替换为本机绝对路径：
 
 ```bash
-codex mcp add infinite-canvas -- node /path/to/infinite-canvas/canvas-agent/dist/index.js mcp
+codex mcp add infinite-canvas -- node /path/to/dsh-freecanvas/canvas-agent/dist/index.js mcp
 ```
 
 Canvas Agent 源码使用 TypeScript 编写，MCP 协议层使用官方 `@modelcontextprotocol/sdk`，工具入参使用 `zod` 描述。
@@ -151,7 +151,7 @@ claude mcp add --scope user --transport stdio infinite-canvas -- npx -y @basketi
 本仓库开发时可以改成：
 
 ```bash
-claude mcp add --scope user --transport stdio infinite-canvas -- node /path/to/infinite-canvas/canvas-agent/dist/index.js mcp
+claude mcp add --scope user --transport stdio infinite-canvas -- node /path/to/dsh-freecanvas/canvas-agent/dist/index.js mcp
 ```
 
 Canvas Agent 调用 Claude Code 时会默认带上 `--allowedTools mcp__infinite-canvas__*`，画布写操作仍由网页侧边栏确认。
