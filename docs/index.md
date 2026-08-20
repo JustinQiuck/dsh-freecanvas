@@ -22,7 +22,7 @@
 
 ## Project Use
 
-- [Open-source License](/docs/business/license)
+- [Licensing](/docs/business/license)
 - [Project Use](/docs/business/business)
 
 ## Security

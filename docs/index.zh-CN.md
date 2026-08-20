@@ -21,7 +21,7 @@
 
 ## 项目使用
 
-- [开源协议](/zh-CN/docs/business/license)
+- [许可证](/zh-CN/docs/business/license)
 - [项目使用](/zh-CN/docs/business/business)
 
 ## 安全
