@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Elastic-2.0
+// Copyright (c) 2026 JustinQiuck
+
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";

@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/JustinQiuck/dsh-freecanvas"><img src="https://img.shields.io/github/stars/JustinQiuck/dsh-freecanvas?style=flat-square&logo=github" alt="GitHub stars"></a>
   <a href="https://github.com/JustinQiuck/dsh-freecanvas/tags"><img src="https://img.shields.io/github/v/tag/JustinQiuck/dsh-freecanvas?style=flat-square&label=version" alt="Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-f97316?style=flat-square" alt="License"></a>
+  <a href="LICENSING.md"><img src="https://img.shields.io/badge/license-Mixed-f97316?style=flat-square" alt="Mixed licenses"></a>
   <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-7-646cff?style=flat-square&logo=vite&logoColor=white" alt="Vite"></a>
 </p>
 
@@ -104,9 +104,9 @@ docker compose -f docker-compose.local.yml up -d --build
 - [更新日志](CHANGELOG.md)
 - [安全策略](SECURITY.md)
 
-## 开源协议
+## 许可证
 
-本项目使用 [MIT License](LICENSE)。任何人都可以免费使用、复制、修改、分发、再授权和商业使用本项目，也可以用于闭源产品。
+本仓库采用分组件授权：上游衍生画布代码与未单独声明的组件继续使用根目录 [MIT License](LICENSE)；`plugins/dsh-freecanvas` 从 `v0.2.0` 起使用 [Elastic License 2.0](plugins/dsh-freecanvas/LICENSE)，并单独保留上游 MIT 声明。未来 Pro 或企业功能将在发布时使用独立商业协议，当前公开 bundle 不包含这些功能。详见 [LICENSING.md](LICENSING.md)。
 
 ## Star History
 

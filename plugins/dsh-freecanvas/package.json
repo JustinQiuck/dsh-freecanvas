@@ -1,8 +1,8 @@
 {
     "name": "dsh-plugin-freecanvas",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Embed DSH FreeCanvas into DeepSeek Harness with split layouts and managed local Agent connectivity. · 把 DSH FreeCanvas 嵌入 DSH，支持分屏布局与本地 Agent 自动连接。",
-    "license": "MIT",
+    "license": "Elastic-2.0",
     "type": "module",
     "main": "./lib/index.js",
     "repository": {
@@ -23,7 +23,9 @@
         "lib",
         "cordis.patch.yml",
         "README.md",
-        "LICENSE"
+        "LICENSE",
+        "LICENSING.md",
+        "THIRD_PARTY_NOTICES.md"
     ],
     "keywords": [
         "dsh-plugin",

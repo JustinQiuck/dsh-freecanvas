@@ -2,6 +2,7 @@
 
 ## Unreleased
 
++ [调整] DSH bundle 从 `v0.2.0` 起改用 Elastic License 2.0，并将上游 MIT 声明、历史版本权利与未来 Pro 商业授权边界分开说明。
 + [新增] 提供可安装的 DSH FreeCanvas bundle，在 DeepSeek Harness 中嵌入画布并管理本地 Canvas Agent 连接。
 + [调整] 仓库与文档站统一为 DSH FreeCanvas 项目信息，移除源项目遗留的联系方式、推广与赞助入口。
 

@@ -67,4 +67,6 @@ DSH FreeCanvas 基于 [basketikun/infinite-canvas](https://github.com/basketikun
 
 ## License
 
-[MIT](./LICENSE)
+`dsh-plugin-freecanvas` 从 `v0.2.0` 起采用 [Elastic License 2.0](./LICENSE)。该协议允许在协议范围内使用、复制、修改和分发插件，但不允许将其作为托管服务提供给第三方，也不允许规避或移除许可证密钥功能。
+
+历史 `v0.1.0` 的已有授权不因后续版本更改而被追溯撤回。上游 MIT 组件仍按其原协议授权，详见 [LICENSING.md](./LICENSING.md) 与 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。未来的 Pro 功能不属于当前公开 bundle，将在发布时使用独立商业 EULA。
