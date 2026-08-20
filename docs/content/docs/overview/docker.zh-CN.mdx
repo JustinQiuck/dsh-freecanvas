@@ -1,18 +1,18 @@
 ---
 title: Docker 部署
-description: 使用 Docker Compose 部署无限画布
+description: 使用 Docker Compose 部署 DSH FreeCanvas
 ---
 
 # Docker 部署
 
 如果你希望在自己的机器或服务器上运行项目，可以直接使用 Docker Compose。
 
-## 使用发布镜像
+## 构建当前仓库
 
 ```bash
-git clone git@github.com:basketikun/infinite-canvas.git
-cd infinite-canvas
-docker compose up -d
+git clone git@github.com:JustinQiuck/dsh-freecanvas.git
+cd dsh-freecanvas
+docker compose -f docker-compose.local.yml up -d --build
 ```
 
 启动后访问：
@@ -21,24 +21,9 @@ docker compose up -d
 http://localhost:3000
 ```
 
-## 本地构建镜像
-
-如果需要基于当前源码构建镜像：
-
-```bash
-docker compose -f docker-compose.local.yml up -d --build
-```
-
 ## 文档站镜像
 
 文档站位于 `docs/` 目录，按带服务端能力的 Next.js standalone 应用单独构建，不打进主应用镜像。
-
-使用发布镜像：
-
-```bash
-cd docs
-docker compose up -d
-```
 
 基于当前源码本地构建：
 
@@ -67,7 +52,7 @@ docker compose -f docker-compose.local.yml up -d --build
 ```yaml
 services:
   app:
-    image: ghcr.io/basketikun/infinite-canvas:latest
+    image: infinite-canvas:local
     ports:
       - "3000:3000"
     environment:
@@ -81,7 +66,7 @@ services:
 docker run -d -p 3000:3000 \
   -e ANALYTICS_GA4_ID=G-XXXXXXXXXX \
   -e ANALYTICS_BAIDU_ID=e8263761cc5c32f5f7a855b8203b965a \
-  ghcr.io/basketikun/infinite-canvas:latest
+  infinite-canvas:local
 ```
 
 单页应用的路由切换会自动向所有已启用的统计上报 pageview。

@@ -1,36 +1,23 @@
 ---
 title: Docker Deployment
-description: Deploy Infinite Canvas with Docker Compose
+description: Deploy DSH FreeCanvas with Docker Compose
 ---
 
 # Docker Deployment
 
-## Use the published image
+## Build the current repository
 
 ```bash
-git clone git@github.com:basketikun/infinite-canvas.git
-cd infinite-canvas
-docker compose up -d
+git clone git@github.com:JustinQiuck/dsh-freecanvas.git
+cd dsh-freecanvas
+docker compose -f docker-compose.local.yml up -d --build
 ```
 
 Open `http://localhost:3000`.
 
-## Build locally
-
-```bash
-docker compose -f docker-compose.local.yml up -d --build
-```
-
 ## Documentation image
 
 The documentation in `docs/` is a separate Next.js standalone application with server capabilities.
-
-```bash
-cd docs
-docker compose up -d
-```
-
-To build it from the current source:
 
 ```bash
 cd docs
@@ -51,7 +38,7 @@ No analytics are enabled by default. A deployment can enable GA4, Baidu Analytic
 ```yaml
 services:
   app:
-    image: ghcr.io/basketikun/infinite-canvas:latest
+    image: infinite-canvas:local
     ports:
       - "3000:3000"
     environment:
