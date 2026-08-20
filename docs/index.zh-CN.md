@@ -1,4 +1,4 @@
-# 无限画布文档索引
+# DSH FreeCanvas 文档索引
 
 ## 项目介绍
 
@@ -18,15 +18,15 @@
 - [本地开发](/zh-CN/docs/development/local-development)
 - [画布数据结构](/zh-CN/docs/development/canvas-data-structure)
 
-## 商务合作
+## 项目使用
 
 - [开源协议](/zh-CN/docs/business/license)
-- [商务合作](/zh-CN/docs/business/business)
+- [项目使用](/zh-CN/docs/business/business)
 
 ## 支持与安全
 
 - [漏洞提交](/zh-CN/docs/support/security)
-- [赞助支持](/zh-CN/docs/support/sponsor)
+- [支持项目](/zh-CN/docs/support/sponsor)
 
 ## 项目进度
 

@@ -16,8 +16,8 @@ Infinite Canvas 提供了一个 Codex App 插件，用来把 Codex 和本地 Can
 把下面这段发给 Codex：
 
 ```text
-请从 https://github.com/basketikun/infinite-canvas.git 安装 Infinite Canvas Codex 插件。
-请 clone 仓库到 ~/plugins/infinite-canvas，确认 plugins/infinite-canvas/.codex-plugin/plugin.json 存在，
+请从 https://github.com/JustinQiuck/dsh-freecanvas.git 安装 Infinite Canvas Codex 插件。
+请 clone 仓库到 ~/plugins/dsh-freecanvas，确认 plugins/infinite-canvas/.codex-plugin/plugin.json 存在，
 把 plugins/infinite-canvas 加入 personal marketplace，先运行 codex plugin marketplace add ~，
 再运行 codex plugin add infinite-canvas@personal。
 安装后请校验插件，并告诉我是否需要开启一个新对话来加载新技能和 MCP 工具。
@@ -31,7 +31,7 @@ Infinite Canvas 提供了一个 Codex App 插件，用来把 Codex 和本地 Can
 
 ```bash
 mkdir -p ~/plugins
-git clone https://github.com/basketikun/infinite-canvas.git ~/plugins/infinite-canvas
+git clone https://github.com/JustinQiuck/dsh-freecanvas.git ~/plugins/dsh-freecanvas
 ```
 
 确保 `~/.agents/plugins/marketplace.json` 中有 Infinite Canvas 条目。这里的 `path` 要指向仓库里的插件子目录：
@@ -47,7 +47,7 @@ git clone https://github.com/basketikun/infinite-canvas.git ~/plugins/infinite-c
       "name": "infinite-canvas",
       "source": {
         "source": "local",
-        "path": "./plugins/infinite-canvas/plugins/infinite-canvas"
+        "path": "./plugins/dsh-freecanvas/plugins/infinite-canvas"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -73,7 +73,7 @@ codex plugin add infinite-canvas@personal
 如果你正在 Infinite Canvas 仓库中开发插件，可以直接使用仓库自带的 marketplace：
 
 ```bash
-cd /path/to/infinite-canvas
+cd /path/to/dsh-freecanvas
 codex plugin marketplace add "$(pwd)"
 codex plugin add infinite-canvas@infinite-canvas-local
 ```

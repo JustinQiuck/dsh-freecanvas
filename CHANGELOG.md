@@ -2,6 +2,8 @@
 
 ## Unreleased
 
++ [调整] 仓库与文档站统一为 DSH FreeCanvas 项目信息，移除源项目遗留的联系方式、推广与赞助入口。
+
 ## v0.16.0 - 2026-08-18
 
 + [新增] 提示词来源新增 Freestylefly GPT Image 2 内置来源。

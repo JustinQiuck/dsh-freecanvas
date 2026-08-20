@@ -12,8 +12,8 @@ The plugin connects Codex to a local Canvas Agent, allowing Codex to open Infini
 Send this request to Codex:
 
 ```text
-Install the Infinite Canvas Codex plugin from https://github.com/basketikun/infinite-canvas.git.
-Clone it to ~/plugins/infinite-canvas, verify plugins/infinite-canvas/.codex-plugin/plugin.json,
+Install the Infinite Canvas Codex plugin from https://github.com/JustinQiuck/dsh-freecanvas.git.
+Clone it to ~/plugins/dsh-freecanvas, verify plugins/infinite-canvas/.codex-plugin/plugin.json,
 add the repository to my personal marketplace with `codex plugin marketplace add ~`,
 then install `infinite-canvas@personal`. Validate the installation and tell me whether a new
 conversation is required to load the Skill and MCP tools.
@@ -23,17 +23,17 @@ conversation is required to load the Skill and MCP tools.
 
 ```bash
 mkdir -p ~/plugins
-git clone https://github.com/basketikun/infinite-canvas.git ~/plugins/infinite-canvas
+git clone https://github.com/JustinQiuck/dsh-freecanvas.git ~/plugins/dsh-freecanvas
 codex plugin marketplace add ~
 codex plugin add infinite-canvas@personal
 ```
 
-The personal marketplace entry must point to `./plugins/infinite-canvas/plugins/infinite-canvas`. Start a new Codex conversation after installation so the Skill and MCP tools load completely.
+The personal marketplace entry must point to `./plugins/dsh-freecanvas/plugins/infinite-canvas`. Start a new Codex conversation after installation so the Skill and MCP tools load completely.
 
 For development from this repository:
 
 ```bash
-cd /path/to/infinite-canvas
+cd /path/to/dsh-freecanvas
 codex plugin marketplace add "$(pwd)"
 codex plugin add infinite-canvas@infinite-canvas-local
 ```

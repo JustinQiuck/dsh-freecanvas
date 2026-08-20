@@ -5,7 +5,6 @@ import { localizePath, type Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
 
 const githubUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
-const demoUrl = 'https://canvas.best/';
 const starHistoryUrl = `https://www.star-history.com/?repos=${gitConfig.user}%2F${gitConfig.repo}&type=date`;
 const starHistoryChart = `https://api.star-history.com/chart?repos=${gitConfig.user}/${gitConfig.repo}&type=date&transparent=true`;
 const darkStarHistoryChart = `${starHistoryChart}&theme=dark`;
@@ -31,11 +30,10 @@ const previewImages = [
 
 const messages = {
   en: {
-    eyebrow: 'Open-source AI image creation workspace',
+    eyebrow: 'AI canvas workspace integrated with DSH',
     center: 'Documentation',
-    description: 'An infinite canvas for image creation that brings canvas composition, AI generation, reference editing, prompt libraries, and reusable assets into one workflow.',
+    description: 'DSH FreeCanvas brings canvas composition, AI generation, reference editing, prompt libraries, reusable assets, and local agents into one workflow.',
     quickStart: 'Quick Start',
-    demo: 'Live Demo',
     gallery: 'Gallery',
     features: 'Explore Features',
     previewAlt: 'Infinite Canvas preview',
@@ -44,11 +42,10 @@ const messages = {
     contributorsAlt: 'Contributor avatars',
   },
   'zh-CN': {
-    eyebrow: '开源 AI 图片创作工作台',
+    eyebrow: '集成到 DSH 的 AI 无限画布工作台',
     center: '文档中心',
-    description: '面向图片创作的无限画布，把画布编排、AI 生成、参考图编辑、提示词库和素材沉淀放在同一个工作流里。',
+    description: 'DSH FreeCanvas 把画布编排、AI 生成、参考图编辑、提示词库、素材管理和本地 Agent 放在同一个工作流里。',
     quickStart: '快速开始',
-    demo: '在线体验',
     gallery: '效果展示',
     features: '功能介绍',
     previewAlt: '无限画布效果图',
@@ -95,15 +92,6 @@ export default async function HomePage({ params }: PageProps<'/[lang]'>) {
             >
               <img src="/github.svg" alt="" className="size-4" />
               GitHub
-            </a>
-            <a
-              href={demoUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-300 px-5 py-3 text-sm font-medium text-zinc-900 transition hover:border-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
-            >
-              {text.demo}
-              <ArrowUpRight className="size-4" />
             </a>
           </div>
         </div>
