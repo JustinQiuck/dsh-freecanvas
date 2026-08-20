@@ -2,6 +2,7 @@
 
 ## Unreleased
 
++ [新增] 提供可安装的 DSH FreeCanvas bundle，在 DeepSeek Harness 中嵌入画布并管理本地 Canvas Agent 连接。
 + [调整] 仓库与文档站统一为 DSH FreeCanvas 项目信息，移除源项目遗留的联系方式、推广与赞助入口。
 
 ## v0.16.0 - 2026-08-18

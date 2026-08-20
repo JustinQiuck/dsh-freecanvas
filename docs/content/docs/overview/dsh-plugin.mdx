@@ -1,0 +1,32 @@
+---
+title: DSH Plugin
+description: Install DSH FreeCanvas in DeepSeek Harness
+---
+
+# DSH Plugin
+
+The DSH bundle in `plugins/dsh-freecanvas/` adds DSH FreeCanvas to the DeepSeek Harness sidebar with conversation, split, and full-canvas layouts. It also manages the local Canvas Agent HTTP service used by the embedded canvas.
+
+## Prerequisite
+
+Start DSH FreeCanvas at `http://127.0.0.1:3000`:
+
+```bash
+git clone https://github.com/JustinQiuck/dsh-freecanvas.git
+cd dsh-freecanvas
+docker compose -f docker-compose.local.yml up -d --build
+```
+
+## Install the bundle
+
+```bash
+dsh plugin --profile desktop add ./plugins/dsh-freecanvas
+```
+
+The package declares `dsh.bundle.patch`, so DSH automatically adds it to the profile bundle list. Do not manually insert another `ui-dsh-freecanvas` row.
+
+The default canvas URL and automatic Agent startup can be changed from the DSH plugin settings. See the [plugin README](https://github.com/JustinQiuck/dsh-freecanvas/tree/main/plugins/dsh-freecanvas) for the MCP bridge example and full configuration.
+
+## Marketplace status
+
+The repository package is prepared for the community DSH catalog. Marketplace listing still depends on the catalog review and repository-age gate; the GitHub repository remains the source of truth for installation and releases.

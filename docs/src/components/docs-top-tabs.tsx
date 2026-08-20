@@ -11,7 +11,7 @@ const tabs = [
   { title: { en: 'Development', 'zh-CN': '开发文档' }, href: '/docs/development/local-development', prefix: '/docs/development' },
   { title: { en: 'Progress', 'zh-CN': '项目进度' }, href: '/docs/progress/changelog', prefix: '/docs/progress' },
   { title: { en: 'Project Use', 'zh-CN': '项目使用' }, href: '/docs/business/business', prefix: '/docs/business' },
-  { title: { en: 'Support', 'zh-CN': '支持项目' }, href: '/docs/support/sponsor', prefix: '/docs/support' },
+  { title: { en: 'Security', 'zh-CN': '安全' }, href: '/docs/support/security', prefix: '/docs/support' },
 ];
 
 export function DocsTopTabs() {

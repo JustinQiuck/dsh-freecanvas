@@ -3,6 +3,7 @@
 ## 项目介绍
 
 - [快速开始](/zh-CN/docs/overview/quick-start)
+- [DSH 插件](/zh-CN/docs/overview/dsh-plugin)
 - [功能介绍](/zh-CN/docs/overview/features)
 - [Render 部署](/zh-CN/docs/overview/render)
 - [Docker 部署](/zh-CN/docs/overview/docker)
@@ -23,10 +24,9 @@
 - [开源协议](/zh-CN/docs/business/license)
 - [项目使用](/zh-CN/docs/business/business)
 
-## 支持与安全
+## 安全
 
 - [漏洞提交](/zh-CN/docs/support/security)
-- [支持项目](/zh-CN/docs/support/sponsor)
 
 ## 项目进度
 

@@ -3,6 +3,7 @@
 ## Overview
 
 - [Quick Start](/docs/overview/quick-start)
+- [DSH Plugin](/docs/overview/dsh-plugin)
 - [Features](/docs/overview/features)
 - [Deploy on Render](/docs/overview/render)
 - [Docker Deployment](/docs/overview/docker)
@@ -24,10 +25,9 @@
 - [Open-source License](/docs/business/license)
 - [Project Use](/docs/business/business)
 
-## Support and Security
+## Security
 
 - [Report a Vulnerability](/docs/support/security)
-- [Support the Project](/docs/support/sponsor)
 
 ## Project Progress
 

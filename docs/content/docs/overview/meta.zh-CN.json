@@ -4,6 +4,7 @@
   "defaultOpen": true,
   "pages": [
     "quick-start",
+    "dsh-plugin",
     "codex-app-plugin",
     "features",
     "render",
