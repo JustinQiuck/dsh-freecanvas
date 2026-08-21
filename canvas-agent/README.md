@@ -1,8 +1,10 @@
 # DSH FreeCanvas Agent
 
-本地 Canvas Agent 用来连接画布网页和用户电脑上的 Codex / Claude Code。本地开发时优先连接 `http://localhost:3000`，不需要先使用线上站点。
+Canvas Agent 连接 DSH 内置画布和用户电脑上的 Codex / Claude Code。DSH FreeCanvas 插件会自动启动并连接它，普通用户不需要手工执行本页命令。
 
-## 启动
+## 开发调试
+
+只有独立排查 Agent、Codex app-server 或 MCP 工具时才需要手工启动：
 
 ```bash
 npx -y @basketikun/canvas-agent
@@ -32,7 +34,7 @@ Local URL: http://127.0.0.1:17371
 Connect token: xxxxxx
 ```
 
-在画布右上角点击 `Agent`，填入地址和 token 后连接。
+调试外部画布时，在画布右上角点击 `Agent`，填入地址和 token 后连接。
 
 Codex app 插件会读取启动输出里的 Local URL 和 Connect token，并直接打开画布网页地址；Canvas Agent 不负责生成画布打开 URL。
 

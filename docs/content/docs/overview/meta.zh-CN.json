@@ -7,8 +7,6 @@
     "dsh-plugin",
     "codex-app-plugin",
     "features",
-    "render",
-    "docker",
     "third-party-prompt-repositories"
   ]
 }

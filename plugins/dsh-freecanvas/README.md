@@ -1,6 +1,6 @@
 # dsh-plugin-freecanvas
 
-将 DSH FreeCanvas 作为内置应用安装到 DeepSeek Harness，提供侧边栏入口、会话/分屏/画布三种布局，以及本地 Canvas Agent 自动连接。
+DSH FreeCanvas 是直接运行在 DeepSeek Harness 内的自包含画布插件，提供侧边栏入口、会话/分屏/画布三种布局，以及本地 Canvas Agent 自动连接。
 
 ## 功能
 
@@ -8,14 +8,16 @@
 - 画布前端随插件包发布，由 DSH 同源提供，安装后不需要另行启动 Web 服务。
 - 支持会话、分屏和全画布模式，并保存分屏比例。
 - 使用随包安装的 `@basketikun/canvas-agent` 自动启动本地 Agent HTTP 服务，不在运行时临时下载脚本。
-- 可选配置外部画布地址，供本地开发或自定义部署使用。
+- 可选配置外部画布地址，仅用于开发调试。
 - 可配合 `@deepseek-ai/dsh-mcp-client` 将画布 MCP 工具注册给 DSH agent。
 
-## 安装
+## 在 DSH 中使用
 
-插件市场或 npm 发布包已经包含构建后的画布，安装后可直接使用，不需要克隆仓库、Docker 或本地 3000 端口。
+在 DSH 插件市场搜索并安装 **DSH FreeCanvas**，然后从侧边栏打开。插件已经包含构建后的画布，普通用户不需要克隆仓库、启动 Docker 或开放本地 3000 端口。
 
-从仓库源码目录安装时，先安装前端依赖并生成插件内置资源：
+## 源码开发
+
+调试插件时，从仓库源码目录安装依赖并生成插件内置资源：
 
 ```bash
 npm --prefix web install --legacy-peer-deps
@@ -44,7 +46,7 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
     autoStartAgent: true
 ```
 
-只有开发或自定义部署时才需要设置外部地址，例如 `canvasUrl: http://127.0.0.1:3000`。浏览器仍通过 DSH 同源路由加载，不会直接导航到跨域 iframe。
+普通用户保持 `canvasUrl` 为空。只有调试外部画布时才填写地址，例如 `canvasUrl: http://127.0.0.1:3000`。浏览器仍通过 DSH 同源路由加载，不会直接导航到跨域 iframe。
 
 ## Agent 操作画布
 

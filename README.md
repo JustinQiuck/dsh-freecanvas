@@ -4,102 +4,68 @@
 
 <h1 align="center">DSH FreeCanvas</h1>
 
+<p align="center">直接运行在 DSH 内的 AI 无限画布插件</p>
+
 <p align="center">
   <a href="https://github.com/JustinQiuck/dsh-freecanvas"><img src="https://img.shields.io/github/stars/JustinQiuck/dsh-freecanvas?style=flat-square&logo=github" alt="GitHub stars"></a>
   <a href="https://github.com/JustinQiuck/dsh-freecanvas/tags"><img src="https://img.shields.io/github/v/tag/JustinQiuck/dsh-freecanvas?style=flat-square&label=version" alt="Version"></a>
   <a href="LICENSING.md"><img src="https://img.shields.io/badge/license-Mixed-f97316?style=flat-square" alt="Mixed licenses"></a>
-  <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-7-646cff?style=flat-square&logo=vite&logoColor=white" alt="Vite"></a>
+  <img src="https://img.shields.io/badge/DSH-plugin-2563eb?style=flat-square" alt="DSH plugin">
 </p>
 
 <p align="center">
-  <a href="docs/content/docs/overview/quick-start.mdx">快速开始</a> · <a href="docs/content/docs/overview/features.mdx">功能介绍</a> · <a href="docs/content/docs/overview/dsh-plugin.zh-CN.mdx">DSH 插件</a> · <a href="docs/content/docs/overview/render.mdx">Render 部署</a> · <a href="docs/content/docs/overview/docker.mdx">Docker 部署</a> · <a href="docs/content/docs/canvas/canvas-node-manual.mdx">画布节点操作手册</a> · <a href="docs/content/docs/canvas/canvas-shortcuts.mdx">画布快捷键</a> · <a href="SECURITY.md">漏洞提交</a> · <a href="docs/content/docs/progress/todo.mdx">待办事项</a> · <a href="canvas-agent/README.md">本地 Canvas Agent</a> · <a href="plugins/infinite-canvas">Codex app 插件</a>
+  <a href="docs/content/docs/overview/quick-start.zh-CN.mdx">快速开始</a> · <a href="docs/content/docs/overview/features.zh-CN.mdx">功能介绍</a> · <a href="docs/content/docs/canvas/canvas-node-manual.zh-CN.mdx">操作手册</a> · <a href="plugins/dsh-freecanvas/README.md">插件说明</a> · <a href="https://github.com/JustinQiuck/dsh-freecanvas/issues">问题反馈</a> · <a href="CHANGELOG.md">更新日志</a>
 </p>
 
-DSH FreeCanvas 是面向 DSH 持续适配和维护的 AI 无限画布工作台。它把画布编排、AI 图片生成、参考图编辑、视频生成、对话助手、提示词库和素材管理放在同一个界面里，为 DSH 提供可视化的 AI 创作与内容编排能力。
+DSH FreeCanvas 为 DeepSeek Harness 提供画布编排、AI 图片与视频生成、参考图编辑、对话助手、提示词库和素材管理。插件随包携带画布前端，并由 DSH 托管本地 Canvas Agent；安装后直接从 DSH 侧边栏使用，无需单独启动 Vite、Docker 或 Web 服务。
 
 ## 项目信息
 
-- **项目定位**：面向 DSH 的可视化 AI 创作与内容编排工作台。
-- **当前状态**：基础集成已经完成，本仓库负责后续适配和维护。
-- **Agent 能力**：通过本地 Canvas Agent 和 MCP 连接 Codex 或 Claude Code。
+- **产品形态**：安装到 DSH 的自包含画布插件。
+- **运行入口**：从 DSH 侧边栏打开，支持会话、分屏和全画布布局。
+- **Agent 能力**：由插件管理本地 Canvas Agent，并通过 MCP 操作当前画布。
 - **数据边界**：画布、素材、生成记录和 API Key 默认保存在浏览器本地。
 - **接口方式**：浏览器直接请求用户配置的 OpenAI 兼容接口。
-- **项目仓库**：[JustinQiuck/dsh-freecanvas](https://github.com/JustinQiuck/dsh-freecanvas)
-
-## 致谢
-
-本项目基于 [basketikun/infinite-canvas](https://github.com/basketikun/infinite-canvas) 进行集成与适配。衷心感谢原作者 [@basketikun](https://github.com/basketikun) 及所有源项目贡献者，感谢他们开放优秀的项目与持续投入。请关注并支持源项目。
+- **维护状态**：DSH 集成已经完成，本仓库继续维护兼容、功能和发布记录。
 
 > [!CAUTION]
-> 项目仍在持续适配中，不保证历史数据格式长期兼容。升级前请备份重要画布数据。
+> 项目仍在持续迭代，不保证历史数据格式长期兼容。升级前请备份重要画布数据。
+
+## 在 DSH 中使用
+
+1. 打开 DSH 插件市场。
+2. 搜索并安装 **DSH FreeCanvas**。
+3. 从 DSH 侧边栏打开 FreeCanvas。
+4. 在画布设置中填写自己的 `Base URL`、`API Key` 和模型。
+
+插件已包含运行所需的画布资源和 Agent 连接。普通用户不需要克隆本仓库，也不需要部署独立站点。
+
+从源码调试插件或参与开发，请阅读 [插件源码说明](plugins/dsh-freecanvas/README.md) 和 [本地开发文档](docs/content/docs/development/local-development.zh-CN.mdx)。
 
 ## 核心功能
 
-- 无限画布：多画布项目、节点拖拽缩放、连线、小地图、撤销重做、导入导出。
-- AI 创作：浏览器前台直连你配置的 OpenAI 兼容接口，支持文生图、图生图、参考图编辑、文本问答、音频和视频生成。
-- 画布助手：围绕选中节点和上游节点对话、生图，并把结果插回画布。
-- 本地 Agent：通过本机 Canvas Agent 连接 Codex / Claude Code，让 Agent 通过 MCP 操作当前画布；
-- Codex App 插件：提供 Codex app 插件，安装后会自动注册 MCP 并尝试拉起本地 Agent。
-- DSH 插件：提供可安装的 DSH bundle，在 DSH 侧边栏中嵌入画布并支持会话、分屏和全画布布局。
-- 插件系统：支持通过 URL 动态安装 / 启用 / 更新 / 卸载远程节点插件，并提供 TypeScript SDK 自行开发画布节点插件。
-- 自定义接口调用：可自定义生图 / 视频接口的调用方式，灵活适配各类中转站与自建服务。
-- 提示词库：浏览器前端直连多个 GitHub 开源项目，并缓存到 IndexedDB。
+- 无限画布：多画布项目、节点拖拽缩放、连线、小地图、撤销重做和导入导出。
+- AI 创作：支持文生图、图生图、参考图编辑、文本问答、音频和视频生成。
+- 画布助手：围绕选中节点与上游节点对话，并把结果插回画布。
+- DSH Agent：通过 Canvas Agent 和 MCP 读取、创建与修改当前画布内容。
+- DSH 布局：支持会话、分屏和全画布模式，并保存布局偏好。
+- 节点插件：支持安装远程节点插件，并提供 TypeScript SDK。
+- 提示词与素材：集中管理提示词、生成记录和浏览器本地素材。
 
-完整功能说明见 [功能介绍](docs/content/docs/overview/features.mdx)。
-
-## 快速开始
-
-AI API Key、Base URL、画布、素材和生成记录默认保存在浏览器本地。
-
-### 本地开发
-
-```bash
-git clone git@github.com:JustinQiuck/dsh-freecanvas.git
-cd dsh-freecanvas
-cd web
-bun install
-bun run dev
-```
-
-### Docker 运行
-
-```bash
-git clone git@github.com:JustinQiuck/dsh-freecanvas.git
-cd dsh-freecanvas
-docker compose -f docker-compose.local.yml up -d --build
-```
-
-运行后默认端口3000，可访问 `http://localhost:3000`。
-
-首次打开后进入右上角配置，填入自己的 OpenAI 兼容 `Base URL` 和 `API Key`。
-
-如果默认的OpenAI接口调用方式与您的API不同，可自定义生图/视频脚本调用。
-
-## DSH 集成重点
-
-- 内置 DSH 画布：`dsh-plugin-freecanvas` 随包携带画布前端，在侧边栏直接打开，无需另行启动 Web 服务，并支持会话、分屏和全画布布局。
-- 托管本地 Agent：DSH 插件负责启动 Canvas Agent，网页自动读取连接信息，不要求用户手工复制 token。
-- 本地优先：画布、素材、生成记录与 API Key 默认保存在浏览器本地，数据边界清晰。
-- 独立维护：版本、更新日志、插件清单、容器镜像和问题反馈统一由本仓库维护。
+完整能力见 [功能介绍](docs/content/docs/overview/features.zh-CN.mdx)。
 
 ## 项目入口
 
-- [项目仓库](https://github.com/JustinQiuck/dsh-freecanvas)
-- [问题反馈](https://github.com/JustinQiuck/dsh-freecanvas/issues)
+- [DSH 插件说明](plugins/dsh-freecanvas/README.md)
 - [项目文档](docs/index.zh-CN.md)
+- [问题反馈](https://github.com/JustinQiuck/dsh-freecanvas/issues)
 - [更新日志](CHANGELOG.md)
 - [安全策略](SECURITY.md)
 
+## 致谢
+
+本项目基于 [basketikun/infinite-canvas](https://github.com/basketikun/infinite-canvas) 进行集成与适配。感谢原作者 [@basketikun](https://github.com/basketikun) 及所有源项目贡献者。
+
 ## 许可证
 
-本仓库采用分组件授权：上游衍生画布代码与未单独声明的组件继续使用根目录 [MIT License](LICENSE)；`plugins/dsh-freecanvas` 从 `v0.2.0` 起使用 [Elastic License 2.0](plugins/dsh-freecanvas/LICENSE)，并单独保留上游 MIT 声明。未来 Pro 或企业功能将在发布时使用独立商业协议，当前公开 bundle 不包含这些功能。详见 [LICENSING.md](LICENSING.md)。
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=JustinQiuck%2Fdsh-freecanvas&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=JustinQiuck/dsh-freecanvas&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=JustinQiuck/dsh-freecanvas&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=JustinQiuck/dsh-freecanvas&type=date&legend=top-left" />
- </picture>
-</a>
+本仓库采用分组件授权。上游衍生画布代码与未单独声明的组件继续使用根目录 [MIT License](LICENSE)；`plugins/dsh-freecanvas` 从 `v0.2.0` 起使用 [Elastic License 2.0](plugins/dsh-freecanvas/LICENSE)，并保留上游 MIT 声明。详见 [LICENSING.md](LICENSING.md)。

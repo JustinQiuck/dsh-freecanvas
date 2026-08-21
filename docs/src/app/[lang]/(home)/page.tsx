@@ -30,9 +30,9 @@ const capabilityCards = [
 
 const messages = {
   en: {
-    eyebrow: 'AI canvas workspace integrated with DSH',
+    eyebrow: 'Self-contained AI canvas plugin for DSH',
     center: 'Documentation',
-    description: 'DSH FreeCanvas brings canvas composition, AI generation, reference editing, prompt libraries, reusable assets, and local agents into one workflow.',
+    description: 'Install DSH FreeCanvas in DSH and use canvas composition, AI generation, reference editing, prompt libraries, reusable assets, and local agents without a separate service.',
     quickStart: 'Quick Start',
     gallery: 'Built for DSH workflows',
     features: 'Explore Features',
@@ -42,9 +42,9 @@ const messages = {
     contributorsAlt: 'Contributor avatars',
   },
   'zh-CN': {
-    eyebrow: '集成到 DSH 的 AI 无限画布工作台',
+    eyebrow: '直接运行在 DSH 内的 AI 无限画布插件',
     center: '文档中心',
-    description: 'DSH FreeCanvas 把画布编排、AI 生成、参考图编辑、提示词库、素材管理和本地 Agent 放在同一个工作流里。',
+    description: '在 DSH 中安装 DSH FreeCanvas，即可使用画布编排、AI 生成、参考图编辑、提示词库、素材管理和本地 Agent，无需单独启动服务。',
     quickStart: '快速开始',
     gallery: '面向 DSH 工作流',
     features: '功能介绍',
