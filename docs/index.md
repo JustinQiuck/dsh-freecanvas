@@ -5,8 +5,6 @@
 - [Quick Start](/docs/overview/quick-start)
 - [DSH Plugin](/docs/overview/dsh-plugin)
 - [Features](/docs/overview/features)
-- [Deploy on Render](/docs/overview/render)
-- [Docker Deployment](/docs/overview/docker)
 - [Third-party GitHub Prompt Repositories](/docs/overview/third-party-prompt-repositories)
 
 ## Canvas Guide

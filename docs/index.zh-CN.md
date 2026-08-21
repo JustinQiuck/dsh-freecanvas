@@ -5,8 +5,6 @@
 - [快速开始](/zh-CN/docs/overview/quick-start)
 - [DSH 插件](/zh-CN/docs/overview/dsh-plugin)
 - [功能介绍](/zh-CN/docs/overview/features)
-- [Render 部署](/zh-CN/docs/overview/render)
-- [Docker 部署](/zh-CN/docs/overview/docker)
 - [第三方 GitHub 提示词仓库](/zh-CN/docs/overview/third-party-prompt-repositories)
 
 ## 操作手册
