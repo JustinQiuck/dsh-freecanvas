@@ -63,6 +63,9 @@ export function validateReleaseContract({ manifest, patchText, packedFiles }) {
     expect(errors, manifest?.bugs?.url === "https://github.com/JustinQiuck/dsh-freecanvas/issues", "bugs URL must use the DSH FreeCanvas repository");
     expect(errors, manifest?.engines?.node === "^22.19.0 || >=24.0.0", "Node engine range must match DSH");
     expect(errors, manifest?.dependencies?.["@basketikun/canvas-agent"] === "0.6.0", "Canvas Agent must remain pinned for repeatable installs");
+    expect(errors, manifest?.devDependencies?.["@deepseek-ai/cordis"] === "4.0.1", "Cordis test dependency must be pinned");
+    expect(errors, manifest?.devDependencies?.["@deepseek-ai/dsh-settings"] === "0.1.1-rc.2", "DSH settings test dependency must match the lifecycle baseline");
+    expect(errors, manifest?.devDependencies?.["@deepseek-ai/schemastery"] === "3.18.1", "schemastery test dependency must be pinned");
     expect(errors, manifest?.peerDependencies?.["@deepseek-ai/schemastery"] === "^3.18.1", "schemastery peer range is required");
     expect(errors, manifest?.peerDependencies?.["@deepseek-ai/dsh-settings"]?.includes("^0.1.1-rc.1"), "DSH settings compatibility must include the current 0.1.1 release line");
     for (const file of ["lib", "scripts", "web", "cordis.patch.yml", "README.md", "CHANGELOG.md", "LICENSE", "LICENSING.md", "THIRD_PARTY_NOTICES.md"]) {

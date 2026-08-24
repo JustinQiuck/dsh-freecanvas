@@ -39,6 +39,11 @@ const manifest = {
     publishConfig: { access: "public" },
     engines: { node: "^22.19.0 || >=24.0.0" },
     dependencies: { "@basketikun/canvas-agent": "0.6.0" },
+    devDependencies: {
+        "@deepseek-ai/cordis": "4.0.1",
+        "@deepseek-ai/dsh-settings": "0.1.1-rc.2",
+        "@deepseek-ai/schemastery": "3.18.1",
+    },
     peerDependencies: {
         "@deepseek-ai/dsh-settings": "^0.1.0-rc.7 || ^0.1.1-rc.1",
         "@deepseek-ai/schemastery": "^3.18.1",

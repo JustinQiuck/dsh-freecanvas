@@ -31,6 +31,7 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
 提交发布候选前可运行以下只读检查；它会验证 bundle manifest、宿主/客户端入口、内置 Web、许可证、第三方声明和候选包敏感信息边界，不会发布 npm 包，也不会留下 `.tgz` 文件：
 
 ```bash
+npm --prefix plugins/dsh-freecanvas run build:web
 npm --prefix plugins/dsh-freecanvas run test:host
 npm --prefix plugins/dsh-freecanvas run verify:package
 ```

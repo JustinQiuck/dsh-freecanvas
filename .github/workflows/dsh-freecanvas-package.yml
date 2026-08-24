@@ -43,13 +43,14 @@ jobs:
           npm ci --prefix web --legacy-peer-deps --no-audit --no-fund
           npm install --prefix plugins/dsh-freecanvas --no-package-lock --legacy-peer-deps --no-audit --no-fund
 
+      - name: Build the bundled Web app
+        run: npm --prefix plugins/dsh-freecanvas run build:web
+
       - name: Test host and release contracts
         run: npm --prefix plugins/dsh-freecanvas run test:host
 
-      - name: Build and verify the package candidate
-        run: |
-          npm --prefix plugins/dsh-freecanvas run build:web
-          npm --prefix plugins/dsh-freecanvas run verify:package
+      - name: Verify the package candidate
+        run: npm --prefix plugins/dsh-freecanvas run verify:package
 
       - name: Install the pinned DSH lifecycle baseline
         run: npm install --prefix "$RUNNER_TEMP/dsh-cli" --no-save --no-audit --no-fund @deepseek-ai/dsh@0.1.1-rc.2
