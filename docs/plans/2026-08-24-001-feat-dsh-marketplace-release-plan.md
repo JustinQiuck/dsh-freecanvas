@@ -138,9 +138,9 @@ flowchart LR
 **Verification:**
 - 一条本地验证命令能给出明确成功结果；任一必需文件或 manifest 字段被移除时测试和验证均失败。
 
-- [ ] **Unit 2: 自动化干净 DSH 安装与启动验收**
+- [x] **Unit 2: 自动化干净 DSH 安装与启动验收**
 
-**Implementation status:** 本机已使用真实 `@deepseek-ai/dsh@0.1.1-rc.2` 完成候选 tarball 的安装、重复安装、Web 启动、官方渠道禁用检查、卸载和基础 Web 重启；待本 workflow 在 GitHub 全新 runner 通过后关闭本单元。
+**Implementation status:** 本机与 GitHub Actions run `32721242203` 均已使用真实 `@deepseek-ai/dsh@0.1.1-rc.2` 完成候选 tarball 的安装、重复安装、Web 启动、官方渠道禁用检查、卸载和基础 Web 重启；全新 runner 的 package lifecycle job `97412930000` 已通过，本单元关闭。
 
 **Goal:** 在 CI 中证明 tarball 能被当前 DSH 安装、组成配置树、启动内置画布并完整卸载。
 

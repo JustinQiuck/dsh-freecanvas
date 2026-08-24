@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p1
 issue_id: "010"
 tags: [dsh, ci, integration, packaging]
@@ -63,7 +63,7 @@ dependencies: ["009"]
 
 ## Acceptance Criteria
 
-- [ ] CI 从候选 tarball 安装到一次性 profile。
+- [x] CI 从候选 tarball 安装到一次性 profile。
 - [x] profile bundles 和 dump config 中 FreeCanvas 恰好出现一次。
 - [x] DSH Web 启动后画布首页、静态资源和关闭状态接口可访问。
 - [x] 重复安装/升级不产生重复 entry。
@@ -96,3 +96,15 @@ dependencies: ["009"]
 - 自动验收必须关闭 Canvas Agent，才能保证 CI 不接触用户级 `~/.infinite-canvas`；真实 Agent 冷启动属于后续 Desktop 验收。
 - 首次真实验收发现卸载前不能把 profile patch 写成空文件；保存并原样恢复 DSH 自动生成的基线 patch 后，`@deepseek-ai/dsh@0.1.1-rc.2` 的完整本机生命周期已通过。
 - GitHub clean runner 尚未实际执行新增 workflow，因此保持本 TODO 为 `ready`，不提前标记完成。
+
+### 2026-08-24 - Verified complete
+
+**By:** Codex
+
+**Actions:**
+- 以固定 `@deepseek-ai/dsh@0.1.1-rc.2` 和 pnpm 安全构建白名单补齐 DSH peer 依赖。
+- GitHub Actions run `32721242203` 在全新 Ubuntu runner 完成 build、26 项 host/contract tests、候选包校验、安装、重复安装、Web 启动、卸载和基础 profile 重启，job `97412930000` 用时 1 分 50 秒并通过。
+
+**Learnings:**
+- npm 的 `--legacy-peer-deps` 会跳过 DSH 启动必需的 peer 包，而默认/force 解析会在 React peer 冲突中长时间停滞；pnpm 自动补齐 peer，并通过精确 `--allow-build` 列表只运行 DSH 所需的 5 个安装脚本，可同时满足速度与供应链边界。
+- 自动化证据已关闭本 TODO；Canvas Agent 冷启动、侧边栏、布局恢复和真实卸载体验继续由 TODO `011` 的 Desktop 终验负责。
