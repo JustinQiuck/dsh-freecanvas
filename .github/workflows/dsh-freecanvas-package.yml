@@ -53,7 +53,16 @@ jobs:
         run: npm --prefix plugins/dsh-freecanvas run verify:package
 
       - name: Install the pinned DSH lifecycle baseline
-        run: npm install --prefix "$RUNNER_TEMP/dsh-cli" --no-save --legacy-peer-deps --no-audit --no-fund @deepseek-ai/dsh@0.1.1-rc.2
+        run: |
+          mkdir -p "$RUNNER_TEMP/dsh-cli"
+          pnpm --dir "$RUNNER_TEMP/dsh-cli" init
+          pnpm --dir "$RUNNER_TEMP/dsh-cli" \
+            --allow-build=@deepseek-ai/dsh-subprocess-local \
+            --allow-build=@google/genai \
+            --allow-build=koffi \
+            --allow-build=node-pty \
+            --allow-build=protobufjs \
+            add @deepseek-ai/dsh@0.1.1-rc.2
 
       - name: Verify clean DSH install, boot, reinstall, and removal
         env:
