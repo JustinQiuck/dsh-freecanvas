@@ -177,18 +177,17 @@ jobs:
       - name: Verify registry integrity and provenance signatures
         run: |
           for attempt in 1 2 3 4 5; do
-            npm --prefix plugins/dsh-freecanvas run verify:release -- registry-after "release/$RELEASE_TARBALL" && break
+            npm --prefix plugins/dsh-freecanvas run verify:release -- registry-after "$GITHUB_WORKSPACE/release/$RELEASE_TARBALL" && break
             if [ "$attempt" = 5 ]; then exit 1; fi
             sleep 5
           done
           mkdir -p "$RUNNER_TEMP/registry-check"
-          npm init --yes --prefix "$RUNNER_TEMP/registry-check"
+          cd "$RUNNER_TEMP/registry-check"
+          npm init --yes
           npm install \
-            --prefix "$RUNNER_TEMP/registry-check" \
-            --package-lock-only \
             --ignore-scripts \
             --no-audit \
             --no-fund \
             "dsh-plugin-freecanvas@$RELEASE_VERSION"
-          npm audit signatures --prefix "$RUNNER_TEMP/registry-check"
+          npm audit signatures
           npm view "dsh-plugin-freecanvas@$RELEASE_VERSION" name version dist.integrity repository.url --json
