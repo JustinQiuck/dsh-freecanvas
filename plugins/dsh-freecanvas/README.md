@@ -47,6 +47,17 @@ DSH_CLI_BIN=/path/to/dsh npm --prefix plugins/dsh-freecanvas run verify:dsh-inst
 
 插件使用独立版本和 `dsh-plugin-freecanvas@<version>` Git tag，不与根项目 `VERSION` 或根项目 `v*` tag 绑定。
 
+### 受控 npm 发布
+
+`.github/workflows/publish-dsh-freecanvas.yml` 只接受已经存在的 `dsh-plugin-freecanvas@<version>` tag。人工触发还必须从 `main` 发起并输入 `publish <release_tag>`；无论哪种入口，tag 都必须指向可从 `origin/main` 到达的干净提交，插件版本、插件 Changelog 和 tag 必须完全一致。工作流会重新执行 package、host 和一次性 DSH profile 全链路校验，再把同一个 tarball 交给受保护的 `npm-production` Environment。
+
+仓库所有者需要在 GitHub 中创建 `npm-production` Environment，限制为插件发布 tag，设置 required reviewer、禁止发起人自审和绕过保护。缺少 Environment 变量 `NPM_AUTH_MODE` 时工作流会在发布前失败：
+
+- 首次发布前，npm 上还不存在本包，无法预先配置 Trusted Publisher。临时设置 `NPM_AUTH_MODE=bootstrap-token`，并仅在该 Environment 中保存一次性 granular token 为 `NPM_BOOTSTRAP_TOKEN`；完成首发后立即删除 secret 并撤销 token。
+- 首发后，在 npm 包设置中把 `JustinQiuck/dsh-freecanvas`、`publish-dsh-freecanvas.yml` 和 `npm-production` 配置为允许 `npm publish` 的 Trusted Publisher，再把 `NPM_AUTH_MODE` 改为 `trusted-publisher`。此模式会拒绝残留的 bootstrap token，并通过 GitHub OIDC 发布。
+
+发布产物始终启用 provenance；工作流会核对本地 tarball SHA256、registry `dist.integrity`、精确版本安装和 npm provenance/signature 审计。任何版本一经发布都不得覆盖。出现问题时先从 DSH 市场撤回推广并让用户固定上一稳定版本，再经单独审批执行 `npm deprecate dsh-plugin-freecanvas@<version> "<reason>"`；修复必须提升补丁版本重新走完整流程，不把 `unpublish` 当常规回滚方式。首次发布尚无上一 npm 稳定版，因此必须保留已验收 tarball，并在首发后完成一次精确版本安装复验再登记市场。
+
 本包通过 `dsh.bundle.patch` 自动插入 `ui-dsh-freecanvas`，不要在 profile 的 `cordis.patch.yml` 中重复声明同一个 id。
 
 ## 配置

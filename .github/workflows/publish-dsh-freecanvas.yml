@@ -1,0 +1,194 @@
+name: Publish DSH FreeCanvas to npm
+
+on:
+  push:
+    tags: ["dsh-plugin-freecanvas@*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing plugin tag, for example dsh-plugin-freecanvas@0.2.0"
+        required: true
+        type: string
+      confirmation:
+        description: "Type publish <release_tag>"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-dsh-freecanvas-npm
+  cancel-in-progress: false
+
+jobs:
+  release-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.release_tag }}
+    outputs:
+      tarball: ${{ steps.candidate.outputs.tarball }}
+      sha256: ${{ steps.candidate.outputs.sha256 }}
+      version: ${{ steps.candidate.outputs.version }}
+    steps:
+      - name: Confirm a manual release request from main
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+          DISPATCH_REF: ${{ github.ref }}
+        run: |
+          node --input-type=module -e '
+            const expected = `publish ${process.env.RELEASE_TAG}`;
+            if (process.env.DISPATCH_REF !== "refs/heads/main") throw new Error("manual publishing must be dispatched from main");
+            if (process.env.CONFIRMATION !== expected) throw new Error(`confirmation must be: ${expected}`);
+          '
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'push' && github.ref || inputs.release_tag }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Verify the dedicated tag and clean main source
+        env:
+          DSH_PLUGIN_RELEASE_TAG: ${{ env.RELEASE_TAG }}
+        run: |
+          git fetch origin main:refs/remotes/origin/main --no-tags
+          npm --prefix plugins/dsh-freecanvas run verify:release -- source
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install release-validation dependencies
+        run: |
+          npm ci --prefix web --legacy-peer-deps --no-audit --no-fund
+          npm install --prefix plugins/dsh-freecanvas --no-package-lock --legacy-peer-deps --no-audit --no-fund
+
+      - name: Build and verify the package candidate
+        run: |
+          npm --prefix plugins/dsh-freecanvas run build:web
+          npm --prefix plugins/dsh-freecanvas run test:host
+          npm --prefix plugins/dsh-freecanvas run verify:package
+          git diff --exit-code
+
+      - name: Install the pinned DSH lifecycle baseline
+        run: |
+          mkdir -p "$RUNNER_TEMP/dsh-cli"
+          pnpm --dir "$RUNNER_TEMP/dsh-cli" init
+          pnpm --dir "$RUNNER_TEMP/dsh-cli" \
+            --allow-build=@deepseek-ai/dsh-subprocess-local \
+            --allow-build=@google/genai \
+            --allow-build=koffi \
+            --allow-build=node-pty \
+            --allow-build=protobufjs \
+            add @deepseek-ai/dsh@0.1.1-rc.2
+
+      - name: Verify clean DSH install, boot, reinstall, and removal
+        env:
+          DSH_CLI_BIN: ${{ runner.temp }}/dsh-cli/node_modules/.bin/dsh
+        run: npm --prefix plugins/dsh-freecanvas run verify:dsh-install
+
+      - name: Create the exact release artifact
+        id: candidate
+        run: |
+          mkdir -p "$RUNNER_TEMP/dsh-freecanvas-release"
+          npm pack ./plugins/dsh-freecanvas \
+            --ignore-scripts \
+            --json \
+            --pack-destination "$RUNNER_TEMP/dsh-freecanvas-release" \
+            > "$RUNNER_TEMP/dsh-freecanvas-pack.json"
+          TARBALL="$(node --input-type=module -e '
+            import fs from "node:fs";
+            const [report] = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            if (!report?.filename) throw new Error("npm pack returned no filename");
+            process.stdout.write(report.filename);
+          ' "$RUNNER_TEMP/dsh-freecanvas-pack.json")"
+          VERSION="$(node -p 'require("./plugins/dsh-freecanvas/package.json").version')"
+          SHA256="$(sha256sum "$RUNNER_TEMP/dsh-freecanvas-release/$TARBALL" | cut -d " " -f 1)"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsh-freecanvas-${{ steps.candidate.outputs.version }}
+          path: ${{ runner.temp }}/dsh-freecanvas-release/${{ steps.candidate.outputs.tarball }}
+          if-no-files-found: error
+          retention-days: 3
+
+  publish:
+    needs: release-candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm-production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RELEASE_TARBALL: ${{ needs.release-candidate.outputs.tarball }}
+      RELEASE_VERSION: ${{ needs.release-candidate.outputs.version }}
+      RELEASE_SHA256: ${{ needs.release-candidate.outputs.sha256 }}
+      NPM_AUTH_MODE: ${{ vars.NPM_AUTH_MODE }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'push' && github.ref || inputs.release_tag }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Use an npm CLI that supports trusted publishing
+        run: npm install --global "npm@^11.5.1"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dsh-freecanvas-${{ env.RELEASE_VERSION }}
+          path: release
+
+      - name: Verify the approved artifact and npm authorization mode
+        env:
+          NPM_BOOTSTRAP_TOKEN_PRESENT: ${{ secrets.NPM_BOOTSTRAP_TOKEN != '' }}
+        run: |
+          echo "$RELEASE_SHA256  release/$RELEASE_TARBALL" | sha256sum --check --strict
+          npm --prefix plugins/dsh-freecanvas run verify:release -- registry-before
+
+      - name: Bootstrap the first package publication with a protected one-time token
+        if: vars.NPM_AUTH_MODE == 'bootstrap-token'
+        continue-on-error: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+        run: npm publish "./release/$RELEASE_TARBALL" --access public --provenance
+
+      - name: Publish later versions through npm Trusted Publishing
+        if: vars.NPM_AUTH_MODE == 'trusted-publisher'
+        continue-on-error: true
+        run: npm publish "./release/$RELEASE_TARBALL" --access public --provenance
+
+      - name: Verify registry integrity and provenance signatures
+        run: |
+          for attempt in 1 2 3 4 5; do
+            npm --prefix plugins/dsh-freecanvas run verify:release -- registry-after "release/$RELEASE_TARBALL" && break
+            if [ "$attempt" = 5 ]; then exit 1; fi
+            sleep 5
+          done
+          mkdir -p "$RUNNER_TEMP/registry-check"
+          npm init --yes --prefix "$RUNNER_TEMP/registry-check"
+          npm install \
+            --prefix "$RUNNER_TEMP/registry-check" \
+            --package-lock-only \
+            --ignore-scripts \
+            --no-audit \
+            --no-fund \
+            "dsh-plugin-freecanvas@$RELEASE_VERSION"
+          npm audit signatures --prefix "$RUNNER_TEMP/registry-check"
+          npm view "dsh-plugin-freecanvas@$RELEASE_VERSION" name version dist.integrity repository.url --json

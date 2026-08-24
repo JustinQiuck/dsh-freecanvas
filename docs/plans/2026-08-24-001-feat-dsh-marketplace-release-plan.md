@@ -212,6 +212,8 @@ flowchart LR
 
 - [ ] **Unit 4: 建立受控 npm 发布与回滚流程**
 
+**Implementation status:** 受控 workflow、插件专用发布契约、首次发布 bootstrap token 边界、后续 Trusted Publishing/OIDC 切换和回滚说明已实现；npm `npm-production` Environment、首次外部发布、首发后 OIDC 切换与 registry 实证仍等待仓库所有者配置及单独授权，因此本单元保持未完成。
+
 **Goal:** 从已验收提交发布带 provenance 的固定版本 npm 包，并能回滚到上一已知版本。
 
 **Requirements:** R4, R5, R7

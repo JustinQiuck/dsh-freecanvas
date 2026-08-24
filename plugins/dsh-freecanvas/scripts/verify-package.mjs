@@ -22,6 +22,7 @@ const REQUIRED_PACKED_FILES = [
     "scripts/build-web.mjs",
     "scripts/verify-dsh-install.mjs",
     "scripts/verify-package.mjs",
+    "scripts/verify-release.mjs",
     "web/config.js",
     "web/index.html",
 ];
@@ -55,9 +56,11 @@ export function validateReleaseContract({ manifest, patchText, packedFiles }) {
     expect(errors, manifest?.dsh?.bundle?.patch === "./cordis.patch.yml", "dsh.bundle.patch must reference ./cordis.patch.yml");
     expect(errors, manifest?.dsh?.client?.platform === "web", "dsh.client.platform must be web");
     expect(errors, manifest?.publishConfig?.access === "public", "publishConfig.access must be public");
+    expect(errors, manifest?.publishConfig?.provenance === true, "publishConfig.provenance must be enabled");
     expect(errors, manifest?.private !== true, "package must not be private");
     expect(errors, manifest?.scripts?.prepack === "npm run build:web", "prepack must build the bundled web app");
     expect(errors, manifest?.scripts?.["verify:package"] === "node ./scripts/verify-package.mjs", "verify:package script is required");
+    expect(errors, manifest?.scripts?.["verify:release"] === "node ./scripts/verify-release.mjs", "verify:release script is required");
     expect(errors, manifest?.repository?.url === "git+https://github.com/JustinQiuck/dsh-freecanvas.git" && manifest?.repository?.directory === "plugins/dsh-freecanvas", "repository metadata must point to the plugin directory");
     expect(errors, manifest?.homepage?.startsWith("https://github.com/JustinQiuck/dsh-freecanvas/"), "homepage must use the DSH FreeCanvas repository");
     expect(errors, manifest?.bugs?.url === "https://github.com/JustinQiuck/dsh-freecanvas/issues", "bugs URL must use the DSH FreeCanvas repository");

@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - ".github/workflows/dsh-freecanvas-package.yml"
+      - ".github/workflows/publish-dsh-freecanvas.yml"
       - "plugins/dsh-freecanvas/**"
       - "web/**"
   push:
     branches: [main]
     paths:
       - ".github/workflows/dsh-freecanvas-package.yml"
+      - ".github/workflows/publish-dsh-freecanvas.yml"
       - "plugins/dsh-freecanvas/**"
       - "web/**"
   workflow_dispatch:

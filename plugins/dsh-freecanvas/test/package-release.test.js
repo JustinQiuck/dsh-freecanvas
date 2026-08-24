@@ -21,6 +21,7 @@ const manifest = {
     scripts: {
         "test:host": "node --test ./test/*.test.js",
         "verify:package": "node ./scripts/verify-package.mjs",
+        "verify:release": "node ./scripts/verify-release.mjs",
         prepack: "npm run build:web",
     },
     repository: {
@@ -36,7 +37,7 @@ const manifest = {
         "./package.json": "./package.json",
     },
     files: ["lib", "scripts", "web", "cordis.patch.yml", "README.md", "CHANGELOG.md", "LICENSE", "LICENSING.md", "THIRD_PARTY_NOTICES.md"],
-    publishConfig: { access: "public" },
+    publishConfig: { access: "public", provenance: true },
     engines: { node: "^22.19.0 || >=24.0.0" },
     dependencies: { "@basketikun/canvas-agent": "0.6.0" },
     devDependencies: {
@@ -68,6 +69,7 @@ const packedFiles = [
     "scripts/build-web.mjs",
     "scripts/verify-dsh-install.mjs",
     "scripts/verify-package.mjs",
+    "scripts/verify-release.mjs",
     "web/assets/index.js",
     "web/assets/index.css",
     "web/config.js",

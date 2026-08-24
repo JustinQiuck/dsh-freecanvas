@@ -2,6 +2,7 @@
 
 ## Unreleased
 
++ [新增] 建立 DSH FreeCanvas 插件专用 tag、版本一致性、受保护 Environment、npm 首发令牌和后续 OIDC/provenance 的受控发布门。
 + [修复] DSH Desktop 改用稳定的宿主本地存储保存画布、素材、媒体、生成记录与用户配置，避免动态端口变化或同版本重装后数据丢失。
 + [新增] 增加一次性 DSH profile 的候选包安装、重复安装、启动与卸载 CI 验收，并强制官方媒体渠道在自动验证中保持关闭。
 + [优化] 增加 DSH FreeCanvas npm 发布包契约检查，自动验证 bundle 入口、内置资源、许可证、兼容范围与候选包敏感信息边界。

@@ -9,6 +9,7 @@
         "build:web": "node ./scripts/build-web.mjs",
         "test:host": "node --test ./test/*.test.js",
         "verify:package": "node ./scripts/verify-package.mjs",
+        "verify:release": "node ./scripts/verify-release.mjs",
         "verify:dsh-install": "node ./scripts/verify-dsh-install.mjs",
         "prepack": "npm run build:web"
     },
@@ -47,7 +48,8 @@
         "node": "^22.19.0 || >=24.0.0"
     },
     "publishConfig": {
-        "access": "public"
+        "access": "public",
+        "provenance": true
     },
     "dependencies": {
         "@basketikun/canvas-agent": "0.6.0"
