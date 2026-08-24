@@ -177,7 +177,7 @@ jobs:
       - name: Verify registry integrity and provenance signatures
         run: |
           for attempt in 1 2 3 4 5; do
-            npm --prefix plugins/dsh-freecanvas run verify:release -- registry-after "release/$RELEASE_TARBALL" && break
+            npm --prefix plugins/dsh-freecanvas run verify:release -- registry-after "$GITHUB_WORKSPACE/release/$RELEASE_TARBALL" && break
             if [ "$attempt" = 5 ]; then exit 1; fi
             sleep 5
           done
