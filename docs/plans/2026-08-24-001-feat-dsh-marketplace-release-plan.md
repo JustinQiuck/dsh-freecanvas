@@ -181,7 +181,7 @@ flowchart LR
 **Verification:**
 - GitHub Actions 能从全新 runner 完成 build、host tests、pack、install、boot、remove 全链路，且不依赖仓库外本地文件。
 
-- [ ] **Unit 3: 完成真实 Desktop 安装、重启、升级和卸载验收**
+- [x] **Unit 3: 完成真实 Desktop 安装、重启、升级和卸载验收**
 
 **Goal:** 在用户实际 DSH Desktop 环境证明 CI 无法覆盖的侧边栏、分屏、Agent 冷启动和卸载行为。
 
@@ -208,7 +208,7 @@ flowchart LR
 - Security：官方渠道仍关闭，浏览器网络和 DSH 日志没有设备 Token 或 KIE Key。
 
 **Verification:**
-- 用户确认候选包在实际 Desktop 上通过完整安装生命周期，并将对应 pending-test 项移入正式功能说明。
+- 最终候选包 SHA256 `2e3ff2db70e99584674930d1e36151ed29007b64cb8660266f568a0fa60e649f` 已在 DSH Desktop `2.0.1`、内置 DSH `0.1.0-rc.7` 的隔离 profile 中通过首次启动、完整冷启动、布局恢复、Canvas Agent 健康检查、34 项 MCP 工具清单与只读调用、非空画布与无敏感测试渠道跨新端口保留、卸载隔离和日常 profile 恢复；修复过程中的同版本重装也验证了非空画布保留。验收中发现并修复了 Desktop 动态端口导致浏览器 origin 变化后画布和用户配置丢失的问题；修复后业务数据与配置写入权限为 `0700`/`0600` 的宿主本地存储。正式功能说明仍等待用户确认 pending-test 结果后更新。
 
 - [ ] **Unit 4: 建立受控 npm 发布与回滚流程**
 

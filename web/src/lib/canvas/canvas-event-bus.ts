@@ -1,5 +1,4 @@
-import localforage from "localforage";
-
+import { createPersistentStore, type PersistentStore } from "@/services/dsh-persistent-store";
 import type { PluginStorage } from "@/types/canvas-plugin";
 
 // Lightweight canvas event bus for communication between nodes and plugins.
@@ -27,16 +26,16 @@ export function onCanvasEvent(event: string, handler: Handler) {
 }
 
 // Private plugin storage isolated by pluginId namespace.
-const stores = new Map<string, LocalForage>();
+const stores = new Map<string, PersistentStore>();
 
 export function createPluginStorage(pluginId: string): PluginStorage {
     let store = stores.get(pluginId);
     if (!store) {
-        store = localforage.createInstance({ name: "infinite-canvas-plugins", storeName: pluginId });
+        store = createPersistentStore({ name: "infinite-canvas-plugins", storeName: pluginId });
         stores.set(pluginId, store);
     }
     return {
-        get: (key) => store!.getItem(key),
+        get: <T = unknown>(key: string) => store!.getItem<T>(key),
         set: async (key, value) => {
             await store!.setItem(key, value);
         },

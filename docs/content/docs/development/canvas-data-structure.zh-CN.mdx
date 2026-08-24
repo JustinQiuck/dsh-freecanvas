@@ -5,16 +5,18 @@ description: 画布本地存储、节点结构、媒体文件与清理机制
 
 # 画布数据结构
 
-本文档说明当前画布在前端本地保存的数据结构、图片文件的存储和清理方式。
+本文档说明当前画布在本机保存的数据结构、图片文件的存储和清理方式。
 
 ## 当前存储位置
 
-当前画布项目主要保存在浏览器本地：
+在 DSH 插件路径下，画布通过 `/dsh-freecanvas-storage` 同源接口写入 `$DSH_HOME/storages/dsh-freecanvas`，从而跨 Desktop 动态端口和同版本重装保留数据；宿主目录权限为 `0700`，数据文件权限为 `0600`。独立 Web 开发模式继续使用 `localForage`。两种模式沿用相同的逻辑数据库、storeName 和 key：
 
-- 画布项目 JSON：`localForage`，数据库名 `infinite-canvas`，storeName `app_state`，key 为 `infinite-canvas:canvas_store`。
-- 我的素材 JSON：`localForage`，数据库名 `infinite-canvas`，storeName `app_state`，key 为 `infinite-canvas:asset_store`。
-- 图片 Blob：单独存到 `localForage` 实例，数据库名 `infinite-canvas`，storeName `image_files`。
-- 视频等媒体 Blob：单独存到 `localForage` 实例，数据库名 `infinite-canvas`，storeName `media_files`。
+- 画布项目 JSON：数据库名 `infinite-canvas`，storeName `app_state`，key 为 `infinite-canvas:canvas_store`。
+- 我的素材 JSON：数据库名 `infinite-canvas`，storeName `app_state`，key 为 `infinite-canvas:asset_store`。
+- AI 渠道、API Key 与 WebDAV 配置：数据库名 `infinite-canvas`，storeName `app_state`，key 为 `infinite-canvas:ai_config_store`。
+- 提示词来源和主题偏好：数据库名 `infinite-canvas`，storeName `app_state`，分别使用各自的 Zustand key。
+- 图片 Blob：数据库名 `infinite-canvas`，storeName `image_files`。
+- 视频等媒体 Blob：数据库名 `infinite-canvas`，storeName `media_files`。
 
 画布 JSON 不直接长期保存大体积 base64 图片或视频。图片节点、视频节点、助手图片和素材媒体只保存展示 URL、`storageKey` 和元信息，真实 Blob 通过 `storageKey` 读取。
 

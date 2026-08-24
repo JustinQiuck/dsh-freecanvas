@@ -6,6 +6,7 @@ DSH FreeCanvas 是直接运行在 DeepSeek Harness 内的自包含画布插件�
 
 - 在 DSH 侧边栏增加「DSH FreeCanvas」入口。
 - 画布前端随插件包发布，由 DSH 同源提供，安装后不需要另行启动 Web 服务。
+- 画布、素材、媒体、生成记录和用户配置写入稳定的 DSH 宿主本地存储，不受 Desktop 动态端口变化影响。
 - 支持会话、分屏和全画布模式，并保存分屏比例。
 - 使用随包安装的 `@basketikun/canvas-agent` 自动启动本地 Agent HTTP 服务，不在运行时临时下载脚本。
 - 可选配置外部画布地址，仅用于开发调试。

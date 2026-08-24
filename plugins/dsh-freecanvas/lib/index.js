@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "@deepseek-ai/schemastery";
 import { createOfficialApiProxy, OFFICIAL_API_PREFIX } from "./official-api-proxy.js";
+import { createPersistentStorageHandler, PERSISTENT_STORAGE_PATH } from "./persistent-storage.js";
 
 /**
  * dsh-plugin-freecanvas host half.
@@ -28,6 +29,7 @@ const AGENT_BOOTSTRAP_PATH = "/canvas-agent-bootstrap";
 const LAYOUT_STATE_PATH = "/dsh-freecanvas-layout";
 const AGENT_CONFIG_FILE = path.join(os.homedir(), ".infinite-canvas", "canvas-agent.json");
 const LAYOUT_STATE_FILE = path.join(process.env.DSH_HOME || path.join(os.homedir(), ".dsh"), "storages", "dsh-freecanvas-layout.json");
+const PERSISTENT_STORAGE_ROOT = path.join(process.env.DSH_HOME || path.join(os.homedir(), ".dsh"), "storages", "dsh-freecanvas");
 const BUNDLED_CANVAS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../web");
 const require = createRequire(import.meta.url);
 const AGENT_ENTRY = require.resolve("@basketikun/canvas-agent");
@@ -446,6 +448,7 @@ const apply = (ctx, config) => {
         getConfig: () => resolveOfficialChannelConfig(current()),
     });
     const layoutStateHandler = createLayoutStateHandler();
+    const persistentStorageHandler = createPersistentStorageHandler(PERSISTENT_STORAGE_ROOT);
     let disposeSection;
     const sync = () => {
         if (disposeSection !== void 0) {
@@ -486,6 +489,11 @@ const apply = (ctx, config) => {
         path: LAYOUT_STATE_PATH,
         handler: layoutStateHandler,
     }), "dsh-freecanvas: layout preferences");
+    ctx.effect(() => ctx.webServer.register({
+        kind: "prefix",
+        path: PERSISTENT_STORAGE_PATH,
+        handler: persistentStorageHandler,
+    }), "dsh-freecanvas: browser data persistence");
     // Serve the packaged canvas on the DSH origin. An explicit canvasUrl keeps
     // the same browser path but switches the handler to external proxy mode.
     ctx.effect(() => ctx.webServer.register({
@@ -499,5 +507,5 @@ const apply = (ctx, config) => {
 // module scope so it is present before `apply` is invoked.
 apply.inject = inject;
 
-export { apply, AGENT_BOOTSTRAP_PATH, CANVAS_PATH, CANVAS_WEB_GUIDANCE, LAYOUT_STATE_PATH, OFFICIAL_API_PREFIX, PROXY_PREFIX };
+export { apply, AGENT_BOOTSTRAP_PATH, CANVAS_PATH, CANVAS_WEB_GUIDANCE, LAYOUT_STATE_PATH, OFFICIAL_API_PREFIX, PERSISTENT_STORAGE_PATH, PROXY_PREFIX };
 export default apply;
