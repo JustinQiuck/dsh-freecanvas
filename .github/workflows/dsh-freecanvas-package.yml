@@ -1,0 +1,72 @@
+name: DSH FreeCanvas Package
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/dsh-freecanvas-package.yml"
+      - ".github/workflows/publish-dsh-freecanvas.yml"
+      - "plugins/dsh-freecanvas/**"
+      - "web/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/dsh-freecanvas-package.yml"
+      - ".github/workflows/publish-dsh-freecanvas.yml"
+      - "plugins/dsh-freecanvas/**"
+      - "web/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dsh-freecanvas-package-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package-lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install FreeCanvas build dependencies
+        run: |
+          npm ci --prefix web --legacy-peer-deps --no-audit --no-fund
+          npm install --prefix plugins/dsh-freecanvas --no-package-lock --legacy-peer-deps --no-audit --no-fund
+
+      - name: Build the bundled Web app
+        run: npm --prefix plugins/dsh-freecanvas run build:web
+
+      - name: Test host and release contracts
+        run: npm --prefix plugins/dsh-freecanvas run test:host
+
+      - name: Verify the package candidate
+        run: npm --prefix plugins/dsh-freecanvas run verify:package
+
+      - name: Install the pinned DSH lifecycle baseline
+        run: |
+          mkdir -p "$RUNNER_TEMP/dsh-cli"
+          pnpm --dir "$RUNNER_TEMP/dsh-cli" init
+          pnpm --dir "$RUNNER_TEMP/dsh-cli" \
+            --allow-build=@deepseek-ai/dsh-subprocess-local \
+            --allow-build=@google/genai \
+            --allow-build=koffi \
+            --allow-build=node-pty \
+            --allow-build=protobufjs \
+            add @deepseek-ai/dsh@0.1.1-rc.2
+
+      - name: Verify clean DSH install, boot, reinstall, and removal
+        env:
+          DSH_CLI_BIN: ${{ runner.temp }}/dsh-cli/node_modules/.bin/dsh
+        run: npm --prefix plugins/dsh-freecanvas run verify:dsh-install

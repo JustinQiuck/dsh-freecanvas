@@ -9,6 +9,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import z from "@deepseek-ai/schemastery";
+import { createOfficialApiProxy, OFFICIAL_API_PREFIX } from "./official-api-proxy.js";
+import { createPersistentStorageHandler, PERSISTENT_STORAGE_PATH } from "./persistent-storage.js";
 
 /**
  * dsh-plugin-freecanvas host half.
@@ -24,15 +26,49 @@ export const CANVAS_WEB_SETTINGS_NAMESPACE = settingsNamespace("dsh-freecanvas")
 const CANVAS_PATH = "/dsh-freecanvas";
 const PROXY_PREFIX = CANVAS_PATH;
 const AGENT_BOOTSTRAP_PATH = "/canvas-agent-bootstrap";
+const LAYOUT_STATE_PATH = "/dsh-freecanvas-layout";
 const AGENT_CONFIG_FILE = path.join(os.homedir(), ".infinite-canvas", "canvas-agent.json");
+const LAYOUT_STATE_FILE = path.join(process.env.DSH_HOME || path.join(os.homedir(), ".dsh"), "storages", "dsh-freecanvas-layout.json");
+const PERSISTENT_STORAGE_ROOT = path.join(process.env.DSH_HOME || path.join(os.homedir(), ".dsh"), "storages", "dsh-freecanvas");
 const BUNDLED_CANVAS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../web");
 const require = createRequire(import.meta.url);
 const AGENT_ENTRY = require.resolve("@basketikun/canvas-agent");
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
 
 export const Config = z.object({
     canvasUrl: z.string().default(""),
     autoStartAgent: z.boolean().default(true),
+    officialApiUrl: z.string().default(""),
+    officialAccountPortalUrl: z.string().default(""),
+    officialChannelEnabled: z.boolean().default(false),
+    officialChannelSingleUserMode: z.boolean().default(false),
+    officialChannelDevelopmentMode: z.boolean().default(false),
 });
+
+function normalizeOfficialUrl(value, allowHttpLoopback, allowPath = false) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    try {
+        const parsed = new URL(raw);
+        if (parsed.username || parsed.password || parsed.search || parsed.hash || (!allowPath && parsed.pathname !== "/")) return "";
+        if (parsed.protocol === "https:") return parsed.toString().replace(/\/$/, "");
+        if (allowHttpLoopback && parsed.protocol === "http:" && LOOPBACK_HOSTS.has(parsed.hostname)) return parsed.toString().replace(/\/$/, "");
+    } catch {
+        return "";
+    }
+    return "";
+}
+
+/** Server-only official-channel configuration. Never expose this object to the browser. */
+export function resolveOfficialChannelConfig(config) {
+    if (config?.officialChannelEnabled !== true) return { enabled: false, reason: "disabled" };
+    if (config?.officialChannelSingleUserMode !== true) return { enabled: false, reason: "single-user-required" };
+    const allowHttpLoopback = config?.officialChannelDevelopmentMode === true;
+    const apiUrl = normalizeOfficialUrl(config?.officialApiUrl, allowHttpLoopback);
+    const accountPortalUrl = normalizeOfficialUrl(config?.officialAccountPortalUrl, allowHttpLoopback, true);
+    if (!apiUrl || !accountPortalUrl) return { enabled: false, reason: "invalid-url" };
+    return { enabled: true, apiUrl, accountPortalUrl, development: allowHttpLoopback };
+}
 
 /** Services injected into this plugin by the harness (webServer: proxy route). */
 const inject = ["systemPrompt", "webServer"];
@@ -88,6 +124,84 @@ function sendText(res, status, message, headers = {}) {
         ...headers,
     });
     res.end(body);
+}
+
+function sendJson(res, status, value) {
+    const body = Buffer.from(JSON.stringify(value), "utf8");
+    res.writeHead(status, {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "no-store, max-age=0",
+        "content-length": String(body.length),
+    });
+    res.end(body);
+}
+
+function readLayoutState(filePath) {
+    try {
+        const value = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        if (value?.version !== 1 || typeof value.active !== "boolean" || !["split", "canvas"].includes(value.mode)) throw new Error("invalid layout state");
+        return { active: value.active, mode: value.mode };
+    } catch {
+        return { active: false, mode: "split" };
+    }
+}
+
+function writeLayoutState(filePath, state) {
+    const directory = path.dirname(filePath);
+    fs.mkdirSync(directory, { recursive: true });
+    const temporary = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+    fs.writeFileSync(temporary, `${JSON.stringify({ version: 1, ...state })}\n`, { mode: 0o600 });
+    fs.renameSync(temporary, filePath);
+    fs.chmodSync(filePath, 0o600);
+}
+
+export function createLayoutStateHandler(filePath = LAYOUT_STATE_FILE) {
+    return async (req, res) => {
+        let requestUrl;
+        try {
+            requestUrl = new URL(req.url ?? "/", "http://x");
+        } catch {
+            sendText(res, 400, "Bad Request");
+            return;
+        }
+        if (requestUrl.pathname !== LAYOUT_STATE_PATH || requestUrl.search) {
+            sendText(res, 404, "Not Found");
+            return;
+        }
+        const fetchSite = String(req.headers["sec-fetch-site"] || "");
+        if (fetchSite && fetchSite !== "same-origin" && fetchSite !== "none") {
+            sendText(res, 403, "Forbidden");
+            return;
+        }
+        if (req.method === "GET") {
+            sendJson(res, 200, readLayoutState(filePath));
+            return;
+        }
+        if (req.method !== "PUT") {
+            sendText(res, 405, "Method Not Allowed", { allow: "GET, PUT" });
+            return;
+        }
+        if (!String(req.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
+            sendText(res, 415, "Unsupported Media Type");
+            return;
+        }
+        const chunks = [];
+        let size = 0;
+        try {
+            for await (const chunk of req) {
+                size += chunk.length;
+                if (size > 1024) throw new Error("too large");
+                chunks.push(chunk);
+            }
+            const value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+            if (typeof value?.active !== "boolean" || !["split", "canvas"].includes(value.mode)) throw new Error("invalid layout state");
+            writeLayoutState(filePath, { active: value.active, mode: value.mode });
+            res.writeHead(204, { "cache-control": "no-store, max-age=0" });
+            res.end();
+        } catch {
+            sendText(res, size > 1024 ? 413 : 400, size > 1024 ? "Payload Too Large" : "Bad Request");
+        }
+    };
 }
 
 function serveBundledCanvas(req, res) {
@@ -330,6 +444,11 @@ function serveCanvas(req, res, canvasUrl) {
 const apply = (ctx, config) => {
     let current = () => config ?? {};
     const agentManager = createAgentManager(() => current()?.autoStartAgent !== false);
+    const officialApiProxy = createOfficialApiProxy({
+        getConfig: () => resolveOfficialChannelConfig(current()),
+    });
+    const layoutStateHandler = createLayoutStateHandler();
+    const persistentStorageHandler = createPersistentStorageHandler(PERSISTENT_STORAGE_ROOT);
     let disposeSection;
     const sync = () => {
         if (disposeSection !== void 0) {
@@ -358,6 +477,23 @@ const apply = (ctx, config) => {
         path: AGENT_BOOTSTRAP_PATH,
         handler: (req, res) => serveAgentBootstrap(req, res, agentManager),
     }), "dsh-freecanvas: local agent bootstrap");
+    // Register this more specific route first so the canvas SPA fallback can
+    // never receive account or media requests.
+    ctx.effect(() => ctx.webServer.register({
+        kind: "prefix",
+        path: OFFICIAL_API_PREFIX,
+        handler: officialApiProxy,
+    }), "dsh-freecanvas: official account proxy");
+    ctx.effect(() => ctx.webServer.register({
+        kind: "prefix",
+        path: LAYOUT_STATE_PATH,
+        handler: layoutStateHandler,
+    }), "dsh-freecanvas: layout preferences");
+    ctx.effect(() => ctx.webServer.register({
+        kind: "prefix",
+        path: PERSISTENT_STORAGE_PATH,
+        handler: persistentStorageHandler,
+    }), "dsh-freecanvas: browser data persistence");
     // Serve the packaged canvas on the DSH origin. An explicit canvasUrl keeps
     // the same browser path but switches the handler to external proxy mode.
     ctx.effect(() => ctx.webServer.register({
@@ -371,5 +507,5 @@ const apply = (ctx, config) => {
 // module scope so it is present before `apply` is invoked.
 apply.inject = inject;
 
-export { apply, AGENT_BOOTSTRAP_PATH, CANVAS_PATH, CANVAS_WEB_GUIDANCE, PROXY_PREFIX };
+export { apply, AGENT_BOOTSTRAP_PATH, CANVAS_PATH, CANVAS_WEB_GUIDANCE, LAYOUT_STATE_PATH, OFFICIAL_API_PREFIX, PERSISTENT_STORAGE_PATH, PROXY_PREFIX };
 export default apply;

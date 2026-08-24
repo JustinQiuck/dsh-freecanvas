@@ -3,7 +3,8 @@ import { useEffect, useRef } from "react";
 import { App } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { createModelChannel, useConfigStore } from "@/stores/use-config-store";
+import { createModelChannel, isOfficialChannel, useConfigStore } from "@/stores/use-config-store";
+import { useOfficialAccountStore } from "@/stores/use-official-account-store";
 import { usePromptSourceScheduler } from "@/hooks/use-prompt-source-scheduler";
 
 export function ClientRootInit({ children }: { children: ReactNode }) {
@@ -13,8 +14,13 @@ export function ClientRootInit({ children }: { children: ReactNode }) {
     const updateConfig = useConfigStore((state) => state.updateConfig);
     const config = useConfigStore((state) => state.config);
     const openConfigDialog = useConfigStore((state) => state.openConfigDialog);
+    const refreshOfficialAccount = useOfficialAccountStore((state) => state.refresh);
 
     usePromptSourceScheduler();
+
+    useEffect(() => {
+        void refreshOfficialAccount();
+    }, [refreshOfficialAccount]);
 
     useEffect(() => {
         if (handledConfigParams.current) return;
@@ -28,16 +34,16 @@ export function ClientRootInit({ children }: { children: ReactNode }) {
         searchParams.delete("apiKey");
         searchParams.delete("apikey");
         window.history.replaceState(null, "", `${window.location.pathname}${searchParams.size ? `?${searchParams}` : ""}${window.location.hash}`);
-        const firstChannel = config.channels[0];
+        const firstChannel = config.channels.find((channel) => !isOfficialChannel(channel));
         updateConfig(
             "channels",
             firstChannel
-                ? config.channels.map((channel, index) =>
-                      index === 0
+                ? config.channels.map((channel) =>
+                      channel.id === firstChannel.id
                           ? {
-                                ...channel,
-                                ...(baseUrl ? { baseUrl } : {}),
-                                ...(apiKey ? { apiKey } : {}),
+                              ...channel,
+                              ...(baseUrl ? { baseUrl } : {}),
+                              ...(apiKey ? { apiKey } : {}),
                             }
                           : channel,
                   )

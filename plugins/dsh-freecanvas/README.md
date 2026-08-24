@@ -6,6 +6,7 @@ DSH FreeCanvas 是直接运行在 DeepSeek Harness 内的自包含画布插件�
 
 - 在 DSH 侧边栏增加「DSH FreeCanvas」入口。
 - 画布前端随插件包发布，由 DSH 同源提供，安装后不需要另行启动 Web 服务。
+- 画布、素材、媒体、生成记录和用户配置写入稳定的 DSH 宿主本地存储，不受 Desktop 动态端口变化影响。
 - 支持会话、分屏和全画布模式，并保存分屏比例。
 - 使用随包安装的 `@basketikun/canvas-agent` 自动启动本地 Agent HTTP 服务，不在运行时临时下载脚本。
 - 可选配置外部画布地址，仅用于开发调试。
@@ -28,6 +29,35 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
 
 执行 `npm pack` 或发布插件时会通过 `prepack` 自动运行同一构建流程，并把生成的 `web/` 静态资源加入包内。
 
+提交发布候选前可运行以下只读检查；它会验证 bundle manifest、宿主/客户端入口、内置 Web、许可证、第三方声明和候选包敏感信息边界，不会发布 npm 包，也不会留下 `.tgz` 文件：
+
+```bash
+npm --prefix plugins/dsh-freecanvas run build:web
+npm --prefix plugins/dsh-freecanvas run test:host
+npm --prefix plugins/dsh-freecanvas run verify:package
+```
+
+仓库 CI 还会安装固定的 `@deepseek-ai/dsh@0.1.1-rc.2`，然后执行：
+
+```bash
+DSH_CLI_BIN=/path/to/dsh npm --prefix plugins/dsh-freecanvas run verify:dsh-install
+```
+
+该命令只使用一次性 `DSH_HOME`：从真实 tarball 安装插件、检查唯一 bundle/entry、重复安装、启动内置画布、确认官方渠道保持关闭，再卸载并启动基础 Web profile。自动验收会关闭 Canvas Agent，避免读写用户的 `~/.infinite-canvas`；Canvas Agent 冷启动、侧边栏和布局交互仍由真实 DSH Desktop 终验负责。
+
+插件使用独立版本和 `dsh-plugin-freecanvas@<version>` Git tag，不与根项目 `VERSION` 或根项目 `v*` tag 绑定。
+
+### 受控 npm 发布
+
+`.github/workflows/publish-dsh-freecanvas.yml` 只接受已经存在的 `dsh-plugin-freecanvas@<version>` tag。人工触发还必须从 `main` 发起并输入 `publish <release_tag>`；无论哪种入口，tag 都必须指向可从 `origin/main` 到达的干净提交，插件版本、插件 Changelog 和 tag 必须完全一致。工作流会重新执行 package、host 和一次性 DSH profile 全链路校验，再把同一个 tarball 交给受保护的 `npm-production` Environment。
+
+仓库所有者需要在 GitHub 中创建 `npm-production` Environment，限制为插件发布 tag，设置 required reviewer、禁止发起人自审和绕过保护。缺少 Environment 变量 `NPM_AUTH_MODE` 时工作流会在发布前失败：
+
+- 首次发布前，npm 上还不存在本包，无法预先配置 Trusted Publisher。临时设置 `NPM_AUTH_MODE=bootstrap-token`，并仅在该 Environment 中保存一次性 granular token 为 `NPM_BOOTSTRAP_TOKEN`；完成首发后立即删除 secret 并撤销 token。
+- 首发后，在 npm 包设置中把 `JustinQiuck/dsh-freecanvas`、`publish-dsh-freecanvas.yml` 和 `npm-production` 配置为允许 `npm publish` 的 Trusted Publisher，再把 `NPM_AUTH_MODE` 改为 `trusted-publisher`。此模式会拒绝残留的 bootstrap token，并通过 GitHub OIDC 发布。
+
+发布产物始终启用 provenance；工作流会核对本地 tarball SHA256、registry `dist.integrity`、精确版本安装和 npm provenance/signature 审计。任何版本一经发布都不得覆盖。出现问题时先从 DSH 市场撤回推广并让用户固定上一稳定版本，再经单独审批执行 `npm deprecate dsh-plugin-freecanvas@<version> "<reason>"`；修复必须提升补丁版本重新走完整流程，不把 `unpublish` 当常规回滚方式。首次发布尚无上一 npm 稳定版，因此必须保留已验收 tarball，并在首发后完成一次精确版本安装复验再登记市场。
+
 本包通过 `dsh.bundle.patch` 自动插入 `ui-dsh-freecanvas`，不要在 profile 的 `cordis.patch.yml` 中重复声明同一个 id。
 
 ## 配置
@@ -36,6 +66,11 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
 | --- | --- | --- |
 | `canvasUrl` | 空 | 留空使用插件内置画布；填写后改为代理指定的外部画布服务 |
 | `autoStartAgent` | `true` | 随 DSH 自动启动本地 Canvas Agent HTTP 服务 |
+| `officialChannelEnabled` | `false` | 官方生图/视频渠道总开关；在完成独立商业验收前保持关闭 |
+| `officialChannelSingleUserMode` | `false` | 仅确认 DSH 仅供当前本机用户使用时才可开启；共享或远程访问时必须保持关闭 |
+| `officialChannelDevelopmentMode` | `false` | 仅允许开发时使用 loopback HTTP 官方服务；生产环境必须保持关闭 |
+| `officialApiUrl` | 空 | 仅由插件宿主访问的 New API 服务根地址；生产必须是无路径、无查询参数的 HTTPS 地址，不填写密钥 |
+| `officialAccountPortalUrl` | 空 | 用户获取配对码的 New API 钱包页面；生产必须是无查询参数的 HTTPS 地址 |
 
 可以在 DSH 设置的插件配置中修改，也可以在 profile 补丁中配置：
 
@@ -44,9 +79,14 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
   name: dsh-plugin-freecanvas
   config:
     autoStartAgent: true
+    officialChannelEnabled: false
 ```
 
 普通用户保持 `canvasUrl` 为空。只有调试外部画布时才填写地址，例如 `canvasUrl: http://127.0.0.1:3000`。浏览器仍通过 DSH 同源路由加载，不会直接导航到跨域 iframe。
+
+官方媒体渠道的生产地址、用户点数、卡密兑换与供应商密钥由后续的 New API 服务端流程管理。插件不会在这里保存 KIE Key，也不会默认启用官方渠道。只有完成真实图片/视频、余额、失败退款、日志脱敏和商业授权验收后，才由运营方单独把 `officialChannelEnabled` 和 `officialChannelSingleUserMode` 设为 `true`。开发联调如需 HTTP，只能同时启用 `officialChannelDevelopmentMode` 并使用 `127.0.0.1`、`localhost` 或 `::1`。
+
+开启后的设备令牌只由 DSH 宿主保存在本机 `~/.infinite-canvas/official-account.json`，使用权限受限的原子文件写入；浏览器只能访问同源的固定账户和媒体代理，不能读取该令牌。该文件不得进入配置导出、WebDAV、支持包或日志；断开连接时先请求服务端撤销，撤销失败则立即隔离本机凭据。该边界尚待独立测试与部署验收，不代表官方渠道已经开放。
 
 ## Agent 操作画布
 

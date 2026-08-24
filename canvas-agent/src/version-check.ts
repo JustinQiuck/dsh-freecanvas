@@ -18,7 +18,7 @@ export function checkVersions() {
     if (!localCodexVersion) {
         logger.warn("Local Codex was not found. Install the latest version with: npm install -g @openai/codex@latest");
     } else if (localCodexVersion !== CODEX_VERSION) {
-        logger.warn(`Bundled Codex ${CODEX_VERSION} does not match local Codex ${localCodexVersion}. Keep both current with: npm install -g @openai/codex@latest && npx -y @basketikun/canvas-agent@latest`);
+        logger.warn(`Bundled Codex ${CODEX_VERSION} does not match local Codex ${localCodexVersion}. Keep local Codex current and update DSH FreeCanvas when a compatible plugin version is released.`);
     }
     void checkLatestVersions(localCodexVersion);
 }
@@ -30,8 +30,8 @@ async function checkLatestVersions(localCodexVersion: string) {
             npmVersion("@basketikun/canvas-agent"),
             npmVersion("@openai/codex"),
         ]);
-        if (isOlder(VERSION, latestAgent)) logger.warn(`Update available: Canvas Agent ${VERSION} -> ${latestAgent}. Run: npx -y @basketikun/canvas-agent@latest`);
-        if (isOlder(CODEX_VERSION, latestCodex)) logger.warn(`Update available: bundled Codex ${CODEX_VERSION} -> ${latestCodex}. Upgrade Canvas Agent with: npx -y @basketikun/canvas-agent@latest`);
+        if (isOlder(VERSION, latestAgent)) logger.warn(`A newer Canvas Agent dependency is available (${VERSION} -> ${latestAgent}). DSH FreeCanvas maintainers should review it for a compatible plugin release.`);
+        if (isOlder(CODEX_VERSION, latestCodex)) logger.warn(`A newer bundled Codex dependency is available (${CODEX_VERSION} -> ${latestCodex}). Update DSH FreeCanvas when a compatible plugin version is released.`);
         if (localCodexVersion && isOlder(localCodexVersion, latestCodex)) logger.warn(`Update available: local Codex ${localCodexVersion} -> ${latestCodex}. Run: npm install -g @openai/codex@latest`);
     } catch {
         logger.warn("Unable to check the latest npm versions; startup will continue.");
