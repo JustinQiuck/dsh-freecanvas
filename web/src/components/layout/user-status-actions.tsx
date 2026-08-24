@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { Tooltip } from "antd";
-import { BookOpen, Keyboard, Puzzle, Settings2 } from "lucide-react";
+import { BookOpen, Keyboard, Puzzle, Settings2, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { canvasThemes } from "@/lib/canvas-theme";
 import { useConfigStore } from "@/stores/use-config-store";
 import { useThemeStore } from "@/stores/use-theme-store";
+import { useOfficialAccountStore } from "@/stores/use-official-account-store";
+import { formatOfficialPoints } from "@/lib/official-points";
 
 type UserStatusActionsProps = {
     showConfig?: boolean;
@@ -25,8 +27,12 @@ export function UserStatusActions({ showConfig = true, variant = "default", onOp
     const theme = useThemeStore((state) => state.theme);
     const setTheme = useThemeStore((state) => state.setTheme);
     const openConfigDialog = useConfigStore((state) => state.openConfigDialog);
+    const officialStatus = useOfficialAccountStore((state) => state.status);
+    const officialBalance = useOfficialAccountStore((state) => state.balance);
+    const setOfficialDrawerOpen = useOfficialAccountStore((state) => state.setDrawerOpen);
     const canvasTheme = canvasThemes[theme];
     const naturalIconClass = "inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-black/5 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-white/10 dark:hover:text-white [&_svg]:size-4";
+    const officialActionClass = "inline-flex h-7 shrink-0 cursor-pointer items-center justify-center rounded-md px-1.5 text-stone-600 transition-colors hover:bg-black/5 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-white/10 dark:hover:text-white [&_svg]:size-4";
     const iconStyle: CSSProperties | undefined = variant === "canvas" ? { color: canvasTheme.node.text } : undefined;
     const versionStyle = iconStyle;
     const gitHubClassName = "size-7 text-base";
@@ -34,9 +40,18 @@ export function UserStatusActions({ showConfig = true, variant = "default", onOp
     const locale = i18n.resolvedLanguage as AppLocale;
     const nextLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
     const languageLabel = t("topNav.switchLanguage", { language: t(nextLocale === "zh-CN" ? "locale.zhCN" : "locale.enUS") });
+    const officialLabel = officialStatus.connected
+        ? t("officialAccount.points", { points: formatOfficialPoints(officialBalance?.points || "0", i18n.resolvedLanguage || "en-US") })
+        : t("officialAccount.notConnected");
 
     return (
         <div className="inline-flex shrink-0 items-center gap-1">
+            {officialStatus.enabled ? (
+                <button type="button" className={`${officialActionClass} gap-1`} style={iconStyle} onClick={() => setOfficialDrawerOpen(true)} aria-label={officialLabel} title={officialLabel}>
+                    <Wallet className="size-4" />
+                    <span className={variant === "canvas" ? "hidden xl:inline" : "hidden lg:inline"}>{officialLabel}</span>
+                </button>
+            ) : null}
             {onOpenPlugins ? (
                 <button type="button" className={naturalIconClass} style={iconStyle} onClick={onOpenPlugins} aria-label={t("topNav.plugins")} title={t("topNav.plugins")}>
                     <Puzzle className="size-4" />

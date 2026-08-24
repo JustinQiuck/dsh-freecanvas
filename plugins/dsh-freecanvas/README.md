@@ -28,6 +28,23 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
 
 执行 `npm pack` 或发布插件时会通过 `prepack` 自动运行同一构建流程，并把生成的 `web/` 静态资源加入包内。
 
+提交发布候选前可运行以下只读检查；它会验证 bundle manifest、宿主/客户端入口、内置 Web、许可证、第三方声明和候选包敏感信息边界，不会发布 npm 包，也不会留下 `.tgz` 文件：
+
+```bash
+npm --prefix plugins/dsh-freecanvas run test:host
+npm --prefix plugins/dsh-freecanvas run verify:package
+```
+
+仓库 CI 还会安装固定的 `@deepseek-ai/dsh@0.1.1-rc.2`，然后执行：
+
+```bash
+DSH_CLI_BIN=/path/to/dsh npm --prefix plugins/dsh-freecanvas run verify:dsh-install
+```
+
+该命令只使用一次性 `DSH_HOME`：从真实 tarball 安装插件、检查唯一 bundle/entry、重复安装、启动内置画布、确认官方渠道保持关闭，再卸载并启动基础 Web profile。自动验收会关闭 Canvas Agent，避免读写用户的 `~/.infinite-canvas`；Canvas Agent 冷启动、侧边栏和布局交互仍由真实 DSH Desktop 终验负责。
+
+插件使用独立版本和 `dsh-plugin-freecanvas@<version>` Git tag，不与根项目 `VERSION` 或根项目 `v*` tag 绑定。
+
 本包通过 `dsh.bundle.patch` 自动插入 `ui-dsh-freecanvas`，不要在 profile 的 `cordis.patch.yml` 中重复声明同一个 id。
 
 ## 配置
@@ -36,6 +53,11 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
 | --- | --- | --- |
 | `canvasUrl` | 空 | 留空使用插件内置画布；填写后改为代理指定的外部画布服务 |
 | `autoStartAgent` | `true` | 随 DSH 自动启动本地 Canvas Agent HTTP 服务 |
+| `officialChannelEnabled` | `false` | 官方生图/视频渠道总开关；在完成独立商业验收前保持关闭 |
+| `officialChannelSingleUserMode` | `false` | 仅确认 DSH 仅供当前本机用户使用时才可开启；共享或远程访问时必须保持关闭 |
+| `officialChannelDevelopmentMode` | `false` | 仅允许开发时使用 loopback HTTP 官方服务；生产环境必须保持关闭 |
+| `officialApiUrl` | 空 | 仅由插件宿主访问的 New API 服务根地址；生产必须是无路径、无查询参数的 HTTPS 地址，不填写密钥 |
+| `officialAccountPortalUrl` | 空 | 用户获取配对码的 New API 钱包页面；生产必须是无查询参数的 HTTPS 地址 |
 
 可以在 DSH 设置的插件配置中修改，也可以在 profile 补丁中配置：
 
@@ -44,9 +66,14 @@ dsh plugin --profile desktop add ./plugins/dsh-freecanvas
   name: dsh-plugin-freecanvas
   config:
     autoStartAgent: true
+    officialChannelEnabled: false
 ```
 
 普通用户保持 `canvasUrl` 为空。只有调试外部画布时才填写地址，例如 `canvasUrl: http://127.0.0.1:3000`。浏览器仍通过 DSH 同源路由加载，不会直接导航到跨域 iframe。
+
+官方媒体渠道的生产地址、用户点数、卡密兑换与供应商密钥由后续的 New API 服务端流程管理。插件不会在这里保存 KIE Key，也不会默认启用官方渠道。只有完成真实图片/视频、余额、失败退款、日志脱敏和商业授权验收后，才由运营方单独把 `officialChannelEnabled` 和 `officialChannelSingleUserMode` 设为 `true`。开发联调如需 HTTP，只能同时启用 `officialChannelDevelopmentMode` 并使用 `127.0.0.1`、`localhost` 或 `::1`。
+
+开启后的设备令牌只由 DSH 宿主保存在本机 `~/.infinite-canvas/official-account.json`，使用权限受限的原子文件写入；浏览器只能访问同源的固定账户和媒体代理，不能读取该令牌。该文件不得进入配置导出、WebDAV、支持包或日志；断开连接时先请求服务端撤销，撤销失败则立即隔离本机凭据。该边界尚待独立测试与部署验收，不代表官方渠道已经开放。
 
 ## Agent 操作画布
 

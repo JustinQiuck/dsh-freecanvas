@@ -64,8 +64,10 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-pane=conversatio
 html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]{display:block}
 `;
 
+        const ACTIVE_KEY = "dsh-canvas:active";
         const MODE_KEY = "dsh-canvas:view-mode";
         const SPLIT_KEY = "dsh-canvas:conversation-width";
+        const LAYOUT_STATE_PATH = "/dsh-freecanvas-layout";
         const DEFAULT_MODE = "split";
         const DEFAULT_SPLIT = 42;
         const VALID_MODES = ["split", "canvas"];
@@ -203,6 +205,14 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]
             }
         }
 
+        function readActive() {
+            try {
+                return localStorage.getItem(ACTIVE_KEY) === "1";
+            } catch (_) {
+                return false;
+            }
+        }
+
         function readSplit() {
             try {
                 const value = Number(localStorage.getItem(SPLIT_KEY));
@@ -214,6 +224,28 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]
 
         function writePreference(key, value) {
             try { localStorage.setItem(key, String(value)); } catch (_) { /* best-effort */ }
+        }
+
+        async function readHostLayout() {
+            try {
+                const response = await fetch(LAYOUT_STATE_PATH, { cache: "no-store" });
+                const value = await response.json();
+                if (!response.ok || typeof value?.active !== "boolean" || !VALID_MODES.includes(value.mode)) return null;
+                return { active: value.active, mode: value.mode };
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function writeHostLayout(active, mode) {
+            writePreference(ACTIVE_KEY, active ? "1" : "0");
+            writePreference(MODE_KEY, mode);
+            void fetch(LAYOUT_STATE_PATH, {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ active, mode }),
+                keepalive: true,
+            }).catch(() => undefined);
         }
 
         function applySplit(value, persist) {
@@ -502,8 +534,9 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]
         function boot() {
             if (disposed) return;
             injectStyle();
-            let active = false;
+            let active = readActive();
             let mode = readMode();
+            let interacted = false;
 
             const updateEntryState = () => {
                 const entry = document.querySelector("[data-dsh-canvas-entry]");
@@ -546,15 +579,18 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]
             };
 
             const setMode = (nextMode, persist) => {
+                interacted = true;
                 mode = VALID_MODES.includes(nextMode) ? nextMode : DEFAULT_MODE;
-                if (persist) writePreference(MODE_KEY, mode);
                 active = true;
+                if (persist) writeHostLayout(active, mode);
                 applyLayoutState("layout-mode");
             };
 
             const selectMode = (nextMode) => {
                 if (nextMode === "conversation") {
+                    interacted = true;
                     active = false;
+                    writeHostLayout(active, mode);
                     applyLayoutState("layout-mode");
                     return;
                 }
@@ -562,7 +598,9 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]
             };
 
             const toggle = () => {
+                interacted = true;
                 active = !active;
+                writeHostLayout(active, mode);
                 applyLayoutState("toggle");
             };
 
@@ -570,20 +608,12 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]
             const mount = () => {
                 try {
                     if (document.querySelector("[data-dsh-canvas-entry]")) {
-                        createView();
-                        createLayoutUi();
-                        applySplit(readSplit(), false);
-                        updateModeControls(mode, active);
-                        updateEntryState();
+                        applyLayoutState("remounted");
                         return true;
                     }
                     const entry = mountSidebarEntry(toggle, selectMode);
                     if (entry) {
-                        createView();
-                        createLayoutUi();
-                        applySplit(readSplit(), false);
-                        updateModeControls(mode, active);
-                        updateEntryState();
+                        applyLayoutState("mounted");
                         document.documentElement.setAttribute("data-dsh-canvas-mounted", "1");
                         showStatus("🎨 画布插件已激活，侧边栏入口已挂载" + (isVisible(entry) ? "" : "（但不可见！）"));
                         diag({
@@ -625,6 +655,15 @@ html[data-dsh-canvas-active][data-dsh-canvas-mode=canvas] [data-dsh-canvas-view]
                     }
                 }, 1000);
             }
+
+            void readHostLayout().then((saved) => {
+                if (!saved || interacted || disposed) return;
+                active = saved.active;
+                mode = saved.mode;
+                writePreference(ACTIVE_KEY, active ? "1" : "0");
+                writePreference(MODE_KEY, mode);
+                applyLayoutState("restored");
+            });
 
             window.__DSH_FREECANVAS_DISPOSE__ = dispose;
         }

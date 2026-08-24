@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { navigationTools, type NavigationToolSlug } from "@/constant/navigation-tools";
 import { AppConfigModal } from "@/components/layout/app-config-modal";
+import { OfficialAccountDrawer } from "@/components/layout/official-account-drawer";
 import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer";
 import { UserStatusActions } from "@/components/layout/user-status-actions";
 import { appAssetUrl } from "@/lib/app-base-url";
@@ -96,6 +97,7 @@ export function AppTopNav() {
 
             <MobileNavDrawer open={mobileNavOpen} activeToolSlug={activeToolSlug} onClose={() => setMobileNavOpen(false)} />
             <AppConfigModal />
+            <OfficialAccountDrawer />
         </>
     );
 }
